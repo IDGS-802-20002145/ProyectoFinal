@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h3 class="title has-text-black text-center">Registro del Producto</h3>
+        <div class="row justify-content-center">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="title is-4 has-text-black">Agregar ropa</h2>
+                        <form method="POST" action="/administrador" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label class="label">Nombre de la prenda:</label>
+                                <input class="form-control" name="txtNombre" type="text"
+                                    placeholder="Ingresa el nombre de la prenda" id="txtNombre">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="label">Estilo:</label>
+                                <input class="form-control" name="txtEstilo" type="text"
+                                    placeholder="Ingresa el estilo de la prenda" id="txtEstilo">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="label">Descripción:</label>
+                                <textarea class="form-control" name="txtDescripcion"
+                                    placeholder="Ingresa la descripción de la prenda" id="txtDescripcion"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="label">Precio:</label>
+                                <input class="form-control" name="txtPrecio" type="number"
+                                    placeholder="Ingresa el precio de la prenda" id="txtPrecio">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="label">Imagen:</label>
+                                <div class="custom-file">
+                                    <input class="custom-file-input" type="file" name="image" id="image">
+                                    <label class="custom-file-label" for="image">Selecciona un archivo…</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <button class="btn btn-success" type="submit">Agregar</button>
+                                <a href="principalAd" class="btn btn-warning">
+                                    <span class="icon">
+                                        <i class="fas fa-undo"></i>
+                                    </span>
+                                    <span>Cancelar</span>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+{% endblock %}

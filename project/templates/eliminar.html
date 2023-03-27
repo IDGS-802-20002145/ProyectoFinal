@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="container-fluid d-flex align-items-center justify-content-center" style="height: 100vh;">
+    <div class="card" style="width: 50%;">
+        <div class="card-body">
+            <h2 class="card-title text-center">Vista Prenda</h2>
+            <form name="sent" action="{{ url_for('main.eliminar', id=producto.id) }}" id="from1" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>ID de la prenda:</label>
+                    <input class="form-control" value="{{producto.id}}" name="txtId" type="text" placeholder="" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Nombre de la prenda:</label>
+                    <input class="form-control" value="{{producto.nombre}}" name="txtNombre" type="text" placeholder="Ingresa el nombre de la prenda" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Estilo:</label>
+                    <input class="form-control" value="{{producto.estilo}}" name="txtEstilo" type="text" placeholder="Ingresa el estilo de la prenda" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea class="form-control" name="txtDescripcion" placeholder="Ingresa la descripción de la prenda" disabled>{{producto.descripcion}}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Precio:</label>
+                    <input class="form-control" value="{{producto.precio}}" name="txtPrecio" type="number" placeholder="Ingresa el precio de la prenda" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>Imagen</label>
+                    
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" name="image" id="customFile" disabled>
+                        <label class="custom-file-label" for="customFile">{{producto.image}}</label>
+                    </div>
+                </div>
+                <div class="form-group text-center">
+                    <button class="btn btn-danger" name="eliminar">Eliminar</button>
+                    <a href="principalAd" class="btn btn-warning"><i class="icon-action-undo icon-white"></i>Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

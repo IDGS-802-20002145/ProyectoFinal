@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endfor %}
+<script>
+    // Agregar controlador de eventos click al botón "Cerrar"
+    document.querySelector('.alert button.close').addEventListener('click', function(event) {
+        event.preventDefault();
+        this.parentNode.style.display = 'none';
+    });
+</script>
+{% endif %}
+{% endwith %}
+
+{% if current_user.admin %}
+<section class="section">
+    <div class="container">
+        <h3 class="title has-text-black has-text-centered">Ropa en Stock</h3>
+        <div class="column is-one-third">
+            <a class="btn btn-primary btn-block" href="administrador">
+                <span>Agregar Nuevo <i class="fas fa-tshirt"></i></span>
+            </a>
+        </div>
+        <div class="row">
+            {% for produc in productos %}
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='img/' + produc.image) }}" class="card-img-top" alt="" style="object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{produc.nombre}}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{produc.estilo}}</h6>
+                        <p class="card-text">${{produc.precio}}</p>
+                        <button class="btn btn-primary btn-sm more-info-btn">Ver más</button>
+                        <div class="more-info" style="display: none;">
+                            <p>{{produc.descripcion}}</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="modificar?id={{produc.id}}" class="card-link">Editar</a>
+                        <a href="eliminar?id={{produc.id}}" class="card-link">Eliminar</a>
+                    </div>
+                </div>
+            </div>
+            {% if loop.index % 4 == 0 %}
+        </div>
+        <div class="row">
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% else %}
+
+<section class="section">
+    <div class="container">
+        <h3 class="title has-text-black has-text-centered">Ropa en Stock</h3>
+        <div class="row">
+            {% for produc in productos %}
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='img/' + produc.image) }}" class="card-img-top" alt="" style="object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{produc.nombre}}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{produc.estilo}}</h6>
+                        <p class="card-text">${{produc.precio}}</p>
+                        <button class="btn btn-primary btn-sm more-info-btn">Ver más</button>
+                        <div class="more-info" style="display: none;">
+                            <p>{{produc.descripcion}}</p>
+                        </div>
+                        <button class="btn btn-success btn-sm more-info-btn"><i class="fas fa-cart-plus"></i> Agregar al carrito</button>
+                    </div>
+                    <div class="card-footer">
+                       Urban Mode
+                    </div>
+                </div>
+            </div>
+            {% if loop.index % 4 == 0 %}
+        </div>
+        <div class="row">
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+<script>
+    let moreInfoBtns = document.querySelectorAll('.more-info-btn');
+
+    moreInfoBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            let moreInfoDiv = btn.nextElementSibling;
+            if (moreInfoDiv.style.display === 'none') {
+                moreInfoDiv.style.display = 'block';
+            } else {
+                moreInfoDiv.style.display = 'none';
+            }
+        });
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-body">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <h2 class="card-header">Vista Prenda</h2>
+                        <form name="sent" action="{{ url_for('main.modificar', id=producto.id) }}" id="from1"
+                            method="POST" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label class="col-form-label">ID de la prenda:</label>
+                                <div class="input-group">
+                                    <input class="form-control" value="{{producto.id}}" name="txtId" type="text"
+                                        placeholder="" disabled>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">Nombre de la prenda:</label>
+                                <div class="input-group">
+                                    <input class="form-control" value="{{producto.nombre}}" name="txtNombre" type="text"
+                                        placeholder="Ingresa el nombre de la prenda">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Estilo:</label>
+                                <div class="input-group">
+                                    <input class="form-control" value="{{producto.estilo}}" name="txtEstilo" type="text"
+                                        placeholder="Ingresa el estilo de la prenda">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Descripción:</label>
+                                <div class="input-group">
+                                    <textarea class="form-control" name="txtDescripcion"
+                                        placeholder="Ingresa la descripción de la prenda">{{producto.descripcion}}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">Precio:</label>
+                                <div class="input-group">
+                                    <input class="form-control" value="{{producto.precio}}" name="txtPrecio"
+                                        type="number" placeholder="Ingresa el precio de la prenda">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">Imagen</label>
+                                <div class="custom-file">
+                                    <img name="img" src="{{ url_for('static', filename='img/' + producto.image) }}"
+                                        width="150px" height="190px" alt="">
+                                    
+                                </div>
+                            </div>
+                            <br>
+                            <div class="form-group ">
+                                <div class="custom-file">
+                                    <label class="custom-file-label">Elija un archivo…</label>
+                                    <input type="file" class="custom-file-input" name="image">
+                                </div>
+                            </div>
+                           
+                            <div class="form-group text-center">
+                                <button class="btn btn-success" name="modificar">Modificar</button>
+                                <a href="principalAd" class="btn btn-warning"><i
+                                        class="icon-action-undo"></i>Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+{% endblock %}

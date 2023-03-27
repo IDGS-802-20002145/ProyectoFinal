@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="bg-info text-white py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3">
+          <img class="img-fluid rounded-circle mb-3" src="../static/img/logo_size_invert.jpg">
+        </div>
+        <div class="col-md-9">
+          <h1 class="display-4">Conócenos</h1>
+          <p class="lead">Somos una empresa dedicada a la venta de ropa de hombre de la mejor calidad.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h2 class="title has-text-black">Nuestra historia</h2>
+          <p class="has-text-link">Somos una empresa fundada en el año 2023, con el objetivo de ofrecer ropa de calidad para hombres que buscan vestir bien y sentirse cómodos.</p>
+          <p class="has-text-link"> Nos enfocamos en ofrecer diseños modernos y elegantes, utilizando materiales de alta calidad y cuidando cada detalle en la confección de nuestras prendas.</p>
+          <p class="has-text-link">En nuestros años de experiencia hemos logrado construir una sólida reputación, ofreciendo productos de calidad y un servicio excepcional a nuestros clientes.</p>
+          <br>
+          <h2 class="title has-text-black">Mision</h2>
+          <p class="has-text-link">Nuestra misión es ofrecer ropa de alta calidad y estilo a nuestros clientes a precios accesibles. Nos esforzamos por proporcionar una experiencia de compra excepcional a nuestros clientes, y nos comprometemos a brindar un servicio al cliente excepcional para garantizar su satisfacción en todo momento.</p>
+          <br>
+          <h2 class="title has-text-black">Visión</h2>
+          <p class="has-text-link">Nuestra visión es convertirnos en la marca de ropa más reconocida y confiable en la industria de la moda. Queremos ser reconocidos por nuestra calidad, estilo y precios asequibles. Nos esforzamos por ser líderes en la industria de la moda, y queremos que nuestros clientes se sientan seguros y confiados al elegirnos como su marca de ropa preferida.</p>
+          <br>
+          <h2 class="title has-text-black">Valores</h2>
+          <ul class="has-text-link">
+            <li>Calidad en todos nuestros productos</li>
+            <li>Compromiso con nuestros clientes</li>
+            <li>Innovación y creatividad en nuestros diseños</li>
+            <li>Respeto y responsabilidad en nuestras acciones</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h2 class="title has-text-black">Contáctanos</h2>
+          <form>
+            <div class="form-group">
+              <label class="label">Nombre</label>
+              <input class="form-control" type="text" placeholder="Ingresa tu nombre">
+            </div>
+            <div class="form-group">
+              <label class="label">Email</label>
+              <input class="form-control" type="email" placeholder="Ingresa tu correo electrónico">
+            </div>
+            <div class="form-group">
+              <label class="label">Comentarios</label>
+              <textarea class="form-control" placeholder="Escribe tu mensaje"></textarea>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-info">Enviar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+{% endblock %}

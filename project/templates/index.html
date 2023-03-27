@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="hero bg-white text-black">
+  <div class="hero-body">
+    <div class="container">
+      <h1 class="display-4">
+        ¡Bienvenidos a Urban Mode!
+      </h1>
+      <h2 class="lead">
+        Aquí encontrarás la mejor selección de ropa para todas las ocasiones.
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="title is-2 has-text-link">Nuestras novedades</h2>
+    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+      <ol class="carousel-indicators">
+        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+      </ol>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img class="d-block w-100" src="../static/img/imgFondo1.jpg" alt="Imagen 1">
+        </div>
+        <div class="carousel-item">
+          <img class="d-block w-100" src="../static/img/fondo2.jpeg" alt="Imagen 2">
+        </div>
+        <div class="carousel-item">
+          <img class="d-block w-100" src="../static/img/fondo2.jpeg" alt="Imagen 3">
+        </div>
+      </div>
+      <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title text-danger">Envío gratis</h3>
+            <h6 class="card-subtitle mb-2 text-muted">En compras mayores a $1000 MXN.</h6>
+            <p class="card-text">Realiza tus compras sin preocupaciones y recibe tus productos en la comodidad de tu hogar.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title text-info">Cambios sin costo</h3>
+            <h6 class="card-subtitle mb-2 text-muted">Si algo no te queda bien, lo cambiamos sin costo.</h6>
+            <p class="card-text">Queremos que te sientas cómodo y seguro con tus compras, por lo que ofrecemos cambios sin costo adicional.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title text-success">Productos de calidad</h3>
+            <h6 class="card-subtitle mb-2 text-muted">Nos aseguramos de ofrecer solo lo mejor.</h6>
+            <p class="card-text">Cada uno de nuestros productos es seleccionado cuidadosamente para garantizar calidad y satisfacción en cada compra.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+</section>
+
+{% endblock %}
