@@ -42,4 +42,14 @@ class Products(db.Model):
     image = db.Column(db.String(255),nullable=False)
     active= db.Column(db.Boolean,default=1)
         
+
+class Proveedor(db.Model):
+    __tablename__ = 'Proveedor'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nombre = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    telefono = db.Column(db.String(20))
+    direccion = db.Column(db.String(255))
+    active = db.Column(db.Boolean, default=1)
+
     

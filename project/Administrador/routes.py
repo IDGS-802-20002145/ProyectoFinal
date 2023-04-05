@@ -4,7 +4,8 @@ from flask import Blueprint, render_template, flash, redirect, request, url_for,
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
 from ..models import db
-from project.models import Products, Role
+from .proveedores import insertar_proveedor, modificar_proveedor_get, modificar_proveedor_post
+from project.models import Products, Role, Proveedor
 from werkzeug.utils import secure_filename
 import logging
 from logging.handlers import RotatingFileHandler
@@ -124,8 +125,24 @@ def eliminar():
         flash("El registro se ha eliminado exitosamente.", "exito")
         return redirect(url_for('main.principalAd'))
     
-@administrador.route('/proveedores', methods=['GET', 'POST'])
+@administrador.route('/proveedores', methods=['GET'])
 @login_required
-def proveedores():
+def proveedores():   
+    proveedores = Proveedor.query.filter_by(active=1).all()
+    return render_template('proveedores.html', proveedores=proveedores)
+
+@administrador.route('/insertar_prov', methods=['GET','POST'])
+@login_required
+def proveedores_insertar():
+    if request.method == 'POST':
+       return insertar_proveedor()
+    return render_template('insertar_proveedor.html')
+
+@administrador.route('/modificar_prov', methods=['GET','POST'])
+@login_required
+def modificar_prov():
     if request.method == 'GET':
-        return render_template('proveedores.html')
+        return modificar_proveedor_get()
+    elif request.method == 'POST':
+       return modificar_proveedor_post()
+    

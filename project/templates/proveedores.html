@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <a href="" class="btn btn-success">
+        <a href="/insertar_prov" class="btn btn-success">
             <i class="icon-plus icon_white"></i>Agregar</a>
 
         <h3>Proveedores</h3>
@@ -20,14 +20,19 @@
                 </tr>
             </thead>
             <tbody>
-                
+                {% for proveedor in proveedores %}
+                <tr>
+                    <td>{{ proveedor.nombre }}</td>
+                    <td>{{ proveedor.email }}</td>
+                    <td>{{ proveedor.telefono }}</td>
+                    <td>{{ proveedor.direccion }}</td>
                     <td><a href="" class="btn btn-danger">
                             <i class="icon-remove icon_white"></i>Eliminar</a> </td>
-                    <td><a href="" class="btn btn-warning">
+                    <td><a href="modificar_prov?id={{proveedor.id}}" class="btn btn-warning">
                             <i class="icon-pencil icon_white"></i>Modificar</a> </td>
 
                 </tr>
-                
+                {% endfor %}
             </tbody>
         </table>
     </div>
