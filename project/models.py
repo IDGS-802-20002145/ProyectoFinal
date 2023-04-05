@@ -21,6 +21,7 @@ class User(db.Model, UserMixin):
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
     admin=db.Column(db.Boolean,nullable=True)
+    empleado=db.Column(db.Boolean,nullable=True)
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
     

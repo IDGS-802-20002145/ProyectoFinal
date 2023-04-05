@@ -1,10 +1,12 @@
+from operator import or_
 import os
 import uuid
 from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
-from . import db
-from project.models import Products, Role
+from . import db, userDataStore
+from werkzeug.security import generate_password_hash, check_password_hash
+from project.models import Products, Role, User
 from werkzeug.utils import secure_filename
 import logging
 from logging.handlers import RotatingFileHandler
@@ -132,16 +134,158 @@ def eliminar():
         flash("El registro se ha eliminado exitosamente.", "exito")
         return redirect(url_for('main.principalAd'))
 
-
-
-@main.route('/principalAd',methods=["GET","POST"])
+@main.route('/getAllUsers',methods=["GET","POST"])
 @login_required
-def principalAd():
-    productos = Products.query.all()
+@roles_required('empleado')
+def getAllUsers():
+    users = User.query.all()
 
-    if len(productos) == 0:
-        productos = 0
+    if len(users) == 0:
+        users = 0
+    return render_template('./users/users.html', users=users)
 
-    print(current_user.admin)
+@main.route('/addUser', methods=['GET','POST'])
+@login_required
+@roles_required('empleado')
+def addUser():   
+    if request.method == 'POST':
+        
+        email=request.form.get('txtEmailUser')
+        name=request.form.get('txtNombreUser')
+        password=request.form.get('txtContrasenaUser')
+        
+        #consultamos si existe un usuario ya registrado con ese email.
+        user=User.query.filter_by(email=email).first()
+        
+        if user:
+           # logger.info('Registro denagado, el correo: '+ email +' ya fue registrado anteriormente' + ' '+ fecha_actual)
+            flash('Ese correo ya esta en uso')
+            return redirect(url_for('auth.register'))
+        
+        #Creamos un nuevo usuario y lo guardamos en la bd.
+        #new_user=User(email=email,name=name,password=generate_password_hash(password,method='sha256'))
+        
+        userDataStore.create_user(name=name,email=email,password=generate_password_hash(password,method='sha256'))
+        
+        db.session.commit()
+        #logger.info('Usuario(cliente) registrado: '+ email + ' el dia '+ fecha_actual)
+        
+        if request.form.get('rolUser') == 'cliente':
+            try:
+                
+                print(email)
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('agregarCliente', [email])  
 
-    return render_template('principalAd.html', productos=productos)
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('main.getAllUsers'))
+                    
+            except Exception as ex:
+                        print(ex)
+        else:
+            try:
+                print(email)
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('agregarEmpleado', [email])  
+
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('main.getAllUsers'))
+                    
+            except Exception as ex:
+                        print(ex)
+    else:
+        return render_template('./users/agregarUser.html')
+    
+@main.route('/updateUser', methods=['GET','POST'])
+@login_required
+@roles_required('empleado')
+def updateUser():
+    id = request.args.get('id')
+    user = User.query.get(id)        
+    
+    if request.method == 'POST':   
+        user.name = request.form.get('txtNombreUser')
+        user.email = request.form.get('txtEmailUser')
+        user.password = request.form.get('txtContrasenaUser')
+        
+        nCont = request.form.get('txtNuevaCont')
+        if nCont != '':
+            user.password = generate_password_hash(request.form.get('txtNuevaCont'),method='sha256')                      
+    
+        if request.form.get('rolUser') == '0':
+            user.empleado = False
+        else:
+            user.empleado = True
+            
+        db.session.commit()
+        
+        if user.empleado:
+            try:  
+                print("Se intenta cambiar a empleado")   
+                print(user.id)               
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('cambiarAEmp', [int(user.id)])  
+                
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('main.getAllUsers'))
+                        
+            except Exception as ex:
+                print(ex)
+        else:
+            try:
+                print(user.id)
+                print("Se intenta cambiar a cliente")                   
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('cambiarACli', [int(user.id)])  
+                 
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('main.getAllUsers'))
+                        
+            except Exception as ex:
+                print(ex)
+        return redirect(url_for('main.getAllUsers'))
+    
+    return render_template('./users/modificarUser.html', user = user)
+
+@main.route('/deleteUser', methods=['GET','POST'])
+@login_required
+@roles_required('empleado')
+def deleteUser():
+    id = request.args.get('id')
+    user = User.query.get(id)        
+    
+    if request.method == 'POST':   
+        user.active = False            
+        db.session.commit()
+        return redirect(url_for('main.getAllUsers'))
+        
+        
+    return render_template('./users/eliminarUser.html', user = user)
+
+@main.route('/findUser', methods=['GET','POST'])
+@login_required
+@roles_required('empleado')
+def findUser():
+    if request.method == 'POST':   
+        search_term = request.form.get('search')
+        users = User.query.filter(or_(User.name.ilike(f'%{search_term}%'),
+                                      User.email.ilike(f'%{search_term}%'))).all()
+        if not users:
+            flash("El usuario no existe", "error")
+            return redirect(url_for('main.getAllUsers'))
+        return render_template('./users/users.html', users=users)
+    else:
+        return redirect(url_for('main.getAllUsers'))
+

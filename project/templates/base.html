@@ -31,7 +31,13 @@
                 {% if current_user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link"
-                        href="{{ url_for('main.principalAd') }}">{{current_user.name}}</a>
+                        href="{{ url_for('cliente.principalAd') }}">{{current_user.name}}</a>
+                </li>
+                {% endif %}
+                {% if current_user.empleado %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ url_for('main.getAllUsers') }}">Gestión Usuarios</a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
