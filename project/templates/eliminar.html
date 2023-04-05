@@ -5,7 +5,7 @@
     <div class="card" style="width: 50%;">
         <div class="card-body">
             <h2 class="card-title text-center">Vista Prenda</h2>
-            <form name="sent" action="{{ url_for('main.eliminar', id=producto.id) }}" id="from1" method="POST" enctype="multipart/form-data">
+            <form name="sent" action="{{ url_for('administrador.eliminar', id=producto.id) }}" id="from1" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label>ID de la prenda:</label>
                     <input class="form-control" value="{{producto.id}}" name="txtId" type="text" placeholder="" disabled>
