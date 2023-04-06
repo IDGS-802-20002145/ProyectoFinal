@@ -16,7 +16,7 @@ def create_app():
     #Configuraciones necesarias 
     app.config['SQLAlchemy_TRACK_MODIFICATIONS']= False
     app.config['SECRET_KEY'] =  os.urandom(24)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@127.0.0.1/urbanMode'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@127.0.0.1:3308/sartorial'
     app.config['SECURITY_PASSWORD_HASH'] =  'pbkdf2_sha512'
     app.config['SECURITY_PASSWORD_SALT'] =  'secretsalt'
     app.config['UPLOAD_FOLDER'] = '/static/img'

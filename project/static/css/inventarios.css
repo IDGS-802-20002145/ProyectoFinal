@@ -1,0 +1,29 @@
+/*haz que el icono de font awesome sea más grande*/
+.fa-2x {
+    font-size: 2em;
+}
+/*metele movimiento al dashboard*/
+#dashboard {
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    -ms-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+/*cuando el mouse pase por encima del dashboard, haz que se agrande*/
+#dashboard:hover {
+    -webkit-transform: scale(1.1);
+    -moz-transform: scale(1.1);
+    -ms-transform: scale(1.1);
+    -o-transform: scale(1.1);
+    transform: scale(1.1);
+}
+/*haz que si el dashboard es bg-danger, el movimiento sea más rápido*/
+.bg-danger #dashboard {
+    -webkit-transition: all 0.2s ease;
+    -moz-transition: all 0.2s ease;
+    -o-transition: all 0.2s ease;
+    -ms-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+}
+

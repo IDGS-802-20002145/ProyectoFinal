@@ -1,46 +1,64 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="container-fluid d-flex align-items-center justify-content-center" style="height: 100vh;">
-    <div class="card" style="width: 50%;">
-        <div class="card-body">
-            <h2 class="card-title text-center">Vista Prenda</h2>
-            <form name="sent" action="{{ url_for('main.eliminar', id=producto.id) }}" id="from1" method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label>ID de la prenda:</label>
-                    <input class="form-control" value="{{producto.id}}" name="txtId" type="text" placeholder="" disabled>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/eliminar.css') }}">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="card-title text-center mb-0">Eliminar producto</h1>
                 </div>
-                <div class="form-group">
-                    <label>Nombre de la prenda:</label>
-                    <input class="form-control" value="{{producto.nombre}}" name="txtNombre" type="text" placeholder="Ingresa el nombre de la prenda" disabled>
-                </div>
-                <div class="form-group">
-                    <label>Estilo:</label>
-                    <input class="form-control" value="{{producto.estilo}}" name="txtEstilo" type="text" placeholder="Ingresa el estilo de la prenda" disabled>
-                </div>
-                <div class="form-group">
-                    <label>Descripción:</label>
-                    <textarea class="form-control" name="txtDescripcion" placeholder="Ingresa la descripción de la prenda" disabled>{{producto.descripcion}}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Precio:</label>
-                    <input class="form-control" value="{{producto.precio}}" name="txtPrecio" type="number" placeholder="Ingresa el precio de la prenda" disabled>
-                </div>
-                
-                <div class="form-group">
-                    <label>Imagen</label>
-                    
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" name="image" id="customFile" disabled>
-                        <label class="custom-file-label" for="customFile">{{producto.image}}</label>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" class="img-fluid"
+                                alt="{{ producto.nombre }}">
+                        </div>
+                        <div class="col-md-8">
+                            <h4 class="card-title">{{ producto.nombre }}</h4>
+                            <p class="card-text">{{ producto.descripcion }}</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Modelo:</strong> {{ producto.modelo }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Precio:</strong> ${{ producto.precio }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <form method="POST" action="{{ url_for('main.eliminar', id=producto.id) }}">
+                        <p id="pregunta" class="mt-3">¿Está seguro que desea eliminar este producto?</p>
+                        <div class="row justify-content-center align-items-center" id="butonsGroup">
+                            <div class="col-md-6">
+
+                                <button class="noselect"><span class="text">Eliminar</span><span class="icon"><svg
+                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24">
+                                            <path
+                                                d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z">
+                                            </path>
+                                        </svg></span></button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('main.principalAd') }}" type="button"
+                                    class="" id="cancelar">
+                                    <svg height="16" width="16" xmlns="http://www.w3.org/2000/svg" version="1.1"
+                                        viewBox="0 0 1024 1024">
+                                        <path
+                                            d="M874.690416 495.52477c0 11.2973-9.168824 20.466124-20.466124 20.466124l-604.773963 0 188.083679 188.083679c7.992021 7.992021 7.992021 20.947078 0 28.939099-4.001127 3.990894-9.240455 5.996574-14.46955 5.996574-5.239328 0-10.478655-1.995447-14.479783-5.996574l-223.00912-223.00912c-3.837398-3.837398-5.996574-9.046027-5.996574-14.46955 0-5.433756 2.159176-10.632151 5.996574-14.46955l223.019353-223.029586c7.992021-7.992021 20.957311-7.992021 28.949332 0 7.992021 8.002254 7.992021 20.957311 0 28.949332l-188.073446 188.073446 604.753497 0C865.521592 475.058646 874.690416 484.217237 874.690416 495.52477z">
+                                        </path>
+                                    </svg>
+                                    <span>Cancelar</span>  
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
                 </div>
-                <div class="form-group text-center">
-                    <button class="btn btn-danger" name="eliminar">Eliminar</button>
-                    <a href="principalAd" class="btn btn-warning"><i class="icon-action-undo icon-white"></i>Cancelar</a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-</section>
+</div>
 {% endblock %}

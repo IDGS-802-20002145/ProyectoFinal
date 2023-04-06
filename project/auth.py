@@ -42,6 +42,8 @@ def login_post():
     login_user(user,remember=remember)
     logger.info('Acceso concedido para el usuario '+ email + ' el dia '+ fecha_actual)
     return redirect(url_for('main.principalAd'))
+
+
     
 
 
@@ -69,7 +71,7 @@ def register_post():
     #Creamos un nuevo usuario y lo guardamos en la bd.
     #new_user=User(email=email,name=name,password=generate_password_hash(password,method='sha256'))
     
-    userDataStore.create_user(name=name,email=email,password=generate_password_hash(password,method='sha256'))
+    userDataStore.create_user(name=name,email=email,password=generate_password_hash(password,method='sha256'),active=1)
     
     db.session.commit()
     logger.info('Usuario registrado: '+ email + ' el dia '+ fecha_actual)
