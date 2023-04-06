@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, flash, redirect, request, url_for,
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
 from ..models import db
-from .proveedores import insertar_proveedor, modificar_proveedor_get, modificar_proveedor_post
+from .proveedores import insertar_proveedor, modificar_proveedor_get, modificar_proveedor_post, eliminar_proveedor_get, eliminar_proveedor_post
 from project.models import Products, Role, Proveedor
 from werkzeug.utils import secure_filename
 import logging
@@ -145,4 +145,12 @@ def modificar_prov():
         return modificar_proveedor_get()
     elif request.method == 'POST':
        return modificar_proveedor_post()
+    
+@administrador.route('/eliminar_prov', methods=['GET','POST'])
+@login_required
+def eliminar_prov():
+    if request.method == 'GET':
+        return eliminar_proveedor_get()
+    elif request.method == 'POST':
+       return eliminar_proveedor_post()
     

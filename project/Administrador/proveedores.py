@@ -38,5 +38,27 @@ def modificar_proveedor_post():
     flash("El registro se ha modificado exitosamente.", "exito")
     return redirect(url_for('administrador.proveedores'))
 
+def eliminar_proveedor_get():
+    id = request.args.get('id')
+    proveedor = Proveedor.query.get(id)
+    print(proveedor)
+    if proveedor is None:
+        flash("El proveedor no existe", "error")
+        return redirect(url_for('administrador.proveedores'))
+    return render_template('eliminar_proveedor.html', proveedor=proveedor, id=id)
+
+def eliminar_proveedor_post():
+    id = int(request.form.get('id'))
+    proveedor = Proveedor.query.get(id)
+    if proveedor is None:
+        flash("El proveedor no existe", "error")
+        return redirect(url_for('administrador.proveedores'))
+        
+    proveedor.active = 0
+    db.session.commit()
+    flash("El registro se ha eliminado exitosamente.", "exito")
+    return redirect(url_for('administrador.proveedores'))
+
+             
                           
                           
