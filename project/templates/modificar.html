@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<link rel="stylesheet" href="../static/css/modificar.css">
 
 <section class="hero">
     <div class="hero-body">
@@ -14,12 +15,13 @@
                             <div class="form-row">
                                 <div class="form-group col-md-4">
                                     <label for="id">ID de la prenda:</label>
-                                        <input class="form-control" value="{{producto.id}}" name="txtId" type="text"
-                                            placeholder="" readonly>
+                                    <input class="form-control" value="{{producto.id}}" name="txtId" type="text"
+                                        placeholder="" readonly>
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="nombre">Nombre del producto:</label>
-                                    <input placeholder="Nombre" name="nombre" value="{{producto.nombre}}" type="text" class="form-control" required="" >
+                                    <input placeholder="Nombre" name="nombre" value="{{producto.nombre}}" type="text"
+                                        class="form-control" required="">
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label for="modelo">Modelo:</label>
@@ -28,7 +30,7 @@
                                 </div>
                             </div>
 
-                            
+
                             <div class="form-row">
                                 <div class="form-group col-md-4">
                                     <label for="descripcion">Descripción:</label>
@@ -48,49 +50,46 @@
                             </div>
                             <div class="form-row">
 
-                            <div class="form-group col-md-6">
-                                <label for="precio">Precio:</label>
-                                <input type="number" class="form-control" id="precio" name="precio"
-                                    value="{{producto.precio}}" step="0.01" required>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="stock_existencia">Stock:</label>
+                                <div class="form-group col-md-6">
+                                    <label for="precio">Precio:</label>
+                                    <input type="number" class="form-control" id="precio" name="precio"
+                                        value="{{producto.precio}}" step="0.01" required>
+                                </div>
                                 <select class="form-control" id="stock_existencia" name="stock_existencia" required>
-                                    <option value="">{{producto.stock_existencia}}</option>
-                                    <option value="10">10</option>
-                                    <option value="15">15</option>
-                                    <option value="20">20</option>
-                                    <option value="25">25</option>
-                                    <option value="30">30</option>
+                                    <option value="">Seleccionar stock</option>
+                                    <option value="10" {% if producto.stock_existencia == 10 %} selected {% endif %}>10</option>
+                                    <option value="15" {% if producto.stock_existencia == 15 %} selected {% endif %}>15</option>
+                                    <option value="20" {% if producto.stock_existencia == 20 %} selected {% endif %}>20</option>
+                                    <option value="25" {% if producto.stock_existencia == 25 %} selected {% endif %}>25</option>
+                                    <option value="30" {% if producto.stock_existencia == 30 %} selected {% endif %}>30</option>
                                 </select>
                                 
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="imagen">Imagen:</label><br>
-                            <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" alt="Imagen"
-                                width="150px" height="150px"><br>
-                            <input type="file" class="" id="imagen" name="imagen" value="{{producto.imagen}}">
-                        </div>
-                        <div class="form-row">
-                            <span><h5>¡Materiales Utilizados para la creacion de este producto!</h5></span>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Material</th>
-                                        <th>Cantidad</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for explosion in explotacion %}
-                                    <tr>
-                                        <td>{{ explosion.material.nombre }}</td>
-                                        <td>{{ explosion.cantidad_usada }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                            <div class="form-check-group">
+                                {% for material in materiales %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="material_{{ material.id }}"
+                                        name="materiales" value="{{ material.id }}" class="form__field" {% if
+                                        material.id in cantidades %}checked{% endif %}>
+                                    <label class="form-check-label" for="material_{{ material.id }}">{{ material.nombre
+                                        }}</label>
+                                </div>
+                                <div class="form__group col-md-6">
+                                    <input type="number" class="form__field" id="cantidad_{{ material.id }}"
+                                        name="cantidad_usada[]" placeholder="Cantidad" step="0.5" min="0"
+                                        value="{% if material.id in cantidades %}{{ cantidades[material.id] }}{% endif %}">
+                                </div>
+                                {% endfor %}
+                                <label for="materiales" class="form__label">Materiales utilizados:</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="imagen">Imagen:</label><br>
+                                <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" alt="Imagen"
+                                    width="150px" height="150px"><br>
+                                <input type="file" class="" id="imagen" name="imagen" value="{{producto.imagen}}">
+                            </div>
+                            
                             <div class="form-group text-center">
                                 <button class="btn btn-success mr-2" name="modificar">Modificar</button>
                                 <a href="{{ url_for('main.principalAd') }}" class="btn btn-warning"><i

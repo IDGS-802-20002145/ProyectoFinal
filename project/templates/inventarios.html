@@ -2,11 +2,40 @@
 
 {% block content %}
 <link rel="stylesheet" href="../static/css/inventarios.css">
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+{% if category == 'error' %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{% elif category == 'success' %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{% endif %}
+{% endfor %}
+<script>
+    // Agregar controlador de eventos click al botón "Cerrar"
+    document.querySelector('.alert button.close').addEventListener('click', function (event) {
+        event.preventDefault();
+        this.parentNode.style.display = 'none';
+    });
+</script>
+{% endif %}
+{% endwith %}
 <div class="content-wrapper">
     <div class="container-fluid">
+        <button id="ver-detalles" class="btn btn-primary my-3 mb-0" onclick="mostrarTabla();"><i class="	far fa-eye mr-2"></i>Ver detalles</button>
         <!-- Breadcrumbs-->
         <!-- Icon Cards-->
-        <div class="row">
+        <div class="row" id="dashboard2">
             {% for mat in materiales %}
             {% if mat.cantidad <= mat.stock_minimo %}
             {% set td_style = "bg-danger" %}
@@ -38,21 +67,11 @@
             </div>
             {% endfor %}
         </div>
-        <!-- Area Chart Example
-        <div class="card mb-3">
-            <div class="card-header">
-                <i class="fa fa-area-chart"></i> Area Chart Example
-            </div>
-            <div class="card-body">
-                <canvas id="myAreaChart" width="100%" height="30"></canvas>
-            </div>
-            <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div>
-        </div>
-        -->
-        <!-- Example DataTables Card-->
-        <div class="card mb-3">
+        <div class="card mb-3" id="dataTable2">
             <div class="card-header">
                 <i class="fa fa-table"></i> Inventario de Materias Primas
+                <button class="btn btn-primary float-left" id="regresar" onclick="mostrarDashboard();"><i class="fas fa-arrow-left mr-2"> </i>Regresar</button>
+                <a class="btn btn-primary float-right" id="agregar" href="materiales"><i class="fas fa-boxes mr-2"> </i>Agregar</a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -67,14 +86,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for material in materiales %}
+                            {% for material in ultimos_materiales %}
                             <tr>
                                 <td>{{material.nombre}}</td>
                                 <td>{{material.descripcion}}</td>
-                                <td>{{material.cantidad}}</td>
-                                <td>{{material.stock_minimo}}</td>
+                                <td>{{material.cantidad|float}}</td>
+                                <td>{{material.stock_minimo|int}}</td>
                                 <td>
-                                    <a href="modificar?id={{ material.id }}" class="btn btn-info btn-sm"
+                                    <a href="modificarMaterial?id={{ material.id }}" class="btn btn-info btn-sm"
                                         title="Modifcar">Editar</a>
                                     <a href="eliminar?id={{ material.id }}" class="btn btn-danger btn-sm">Eliminar</a>
                                 </td>
@@ -90,5 +109,5 @@
     </div>
 
 </div>
-
+<script src="../static/js/main.js"></script>
 {% endblock %}

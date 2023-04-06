@@ -39,8 +39,9 @@ class InventarioMateriaPrima(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(255), nullable=False)
     descripcion = db.Column(db.Text)
-    cantidad = db.Column(db.Integer, nullable=False)
+    cantidad = db.Column(db.Float, nullable=False)
     stock_minimo = db.Column(db.Float)
+    estatus = db.Column(db.Boolean, default=True)
 
 class Producto(db.Model):
     __tablename__ = 'producto'
@@ -52,7 +53,7 @@ class Producto(db.Model):
     modelo = db.Column(db.String(50), nullable=False)
     precio = db.Column(db.Float, nullable=False)
     imagen = db.Column(db.String(250), nullable=False)
-    stock_existencia = db.Column(db.Float, nullable=False)
+    stock_existencia = db.Column(db.Integer, nullable=False)
     estatus = db.Column(db.Boolean, default=True)
     det_pedido = db.relationship('DetPedido', backref='producto_detalle', lazy=True, overlaps="producto_detalle")
     explotacion_material = db.relationship('ExplotacionMaterial', backref='producto_explosion', lazy=True, overlaps="producto_explosion")
@@ -115,6 +116,7 @@ class ExplotacionMaterial(db.Model):
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
     material_id = db.Column(db.Integer, db.ForeignKey('inventario_materia_prima.id'), nullable=False)
     cantidad_usada = db.Column(db.Float, nullable=False)
+    cantidadIndividual = db.Column(db.Float, nullable=False)
     producto = db.relationship('Producto', backref='materiales_usados', overlaps="explotacion_material,producto_explosion")
     material = db.relationship('InventarioMateriaPrima', overlaps='materiales_usados')
 
