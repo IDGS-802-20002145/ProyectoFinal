@@ -27,7 +27,7 @@ input:hover {
     transition: opacity .3s;
 }
 
-.form-check-input{
+.form-check-input {
     flex-basis: 33.33%;
     padding: 0 10px;
     box-sizing: border-box;

@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, flash, redirect, request, url_for,
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
 from . import db
-from project.models import Producto, Role, User, InventarioMateriaPrima, ExplotacionMaterial
+from project.models import Producto, Role, User, InventarioMateriaPrima, ExplotacionMaterial, Proveedor,DetCompra,Compra
 from werkzeug.utils import secure_filename
 import logging
 from logging.handlers import RotatingFileHandler
@@ -248,7 +248,29 @@ def compras():
     id = request.args.get('id')
     if request.method == 'GET':
         materiales = InventarioMateriaPrima.query.all()
-        return render_template('compras.html', materiales=materiales, id=id)
+        proveedores = Proveedor.query.all()
+        return render_template('compras.html', materiales=materiales, id=id, proveedores=proveedores)
+    elif request.method == 'POST':
+        material = InventarioMateriaPrima.query.get(id)
+        proveedor = request.form.get('proveedor')
+        cantidad = request.form.get('cantidad')
+        fecha = request.form.get('fecha')
+        precio= request.form.get('precio')
+        compra = Compra(proveedor_id=proveedor, fecha=fecha)
+        db.session.add(compra)
+        # Obtener el objeto Producto creado en la sesión de la base de datos
+        compraNow = db.session.query(Compra).order_by(Compra.id.desc()).first()
+        print(f"Producto: {compraNow.id}")
+        # Crear un nuevo objeto CompraMaterial para cada material comprado
+        materialC= DetCompra(compra_id=compraNow.id, material_id=material.id, cantidad=cantidad, precio=precio)
+        db.session.add(materialC)
+        # Aumentar la cantidad de material en el inventario correspondiente
+        material.cantidad += int(cantidad)
+        db.session.add(material)
+        db.session.commit()
+        
+        flash("La compra se ha realizado exitosamente.", "success")
+        return redirect(url_for('main.inventarios'))
 
 #FUNCIONES PARA EL MODULO DE MATERIA PRIMA
 @main.route('/materiales', methods=['GET', 'POST'])

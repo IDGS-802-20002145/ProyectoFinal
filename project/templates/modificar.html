@@ -3,11 +3,11 @@
 {% block content %}
 <link rel="stylesheet" href="../static/css/modificar.css">
 
-<section class="hero">
+<sectio>
     <div class="hero-body">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-12">
+                <div class="col-lg-8 order-md-1">
                     <div class="card">
                         <h2 class="card-header">Vista Prenda</h2>
                         <form name="sent" action="{{ url_for('main.modificar', id=producto.id) }}" id="from1"
@@ -55,6 +55,8 @@
                                     <input type="number" class="form-control" id="precio" name="precio"
                                         value="{{producto.precio}}" step="0.01" required>
                                 </div>
+                                <div class="form-group col-md-6">
+                                    <label for="precio">Stock en Existencia:</label>
                                 <select class="form-control" id="stock_existencia" name="stock_existencia" required>
                                     <option value="">Seleccionar stock</option>
                                     <option value="10" {% if producto.stock_existencia == 10 %} selected {% endif %}>10</option>
@@ -63,26 +65,9 @@
                                     <option value="25" {% if producto.stock_existencia == 25 %} selected {% endif %}>25</option>
                                     <option value="30" {% if producto.stock_existencia == 30 %} selected {% endif %}>30</option>
                                 </select>
-                                
-                            </div>
-                            <div class="form-check-group">
-                                {% for material in materiales %}
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="material_{{ material.id }}"
-                                        name="materiales" value="{{ material.id }}" class="form__field" {% if
-                                        material.id in cantidades %}checked{% endif %}>
-                                    <label class="form-check-label" for="material_{{ material.id }}">{{ material.nombre
-                                        }}</label>
                                 </div>
-                                <div class="form__group col-md-6">
-                                    <input type="number" class="form__field" id="cantidad_{{ material.id }}"
-                                        name="cantidad_usada[]" placeholder="Cantidad" step="0.5" min="0"
-                                        value="{% if material.id in cantidades %}{{ cantidades[material.id] }}{% endif %}">
-                                </div>
-                                {% endfor %}
-                                <label for="materiales" class="form__label">Materiales utilizados:</label>
                             </div>
-
+                            
                             <div class="form-group">
                                 <label for="imagen">Imagen:</label><br>
                                 <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" alt="Imagen"
@@ -95,9 +80,32 @@
                                 <a href="{{ url_for('main.principalAd') }}" class="btn btn-warning"><i
                                         class="icon-action-undo"></i>Cancelar</a>
                             </div>
-                        </form>
+                    
                     </div>
                 </div>
+                <div class="col-md-4 order-md-2">
+                    <div class="form-check-group">
+                        <label for="materiales" class="form__label">Materiales utilizados:</label>
+                        <br>
+                        {% for material in materiales %}
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input" type="checkbox" id="material_{{ material.id }}" name="materiales" value="{{ material.id }}" class="form__field" {% if material.id in cantidades %}checked{% endif %}>
+                                    <label class="form-check-label" for="material_{{ material.id }}">{{ material.nombre }}</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form__group">
+                                    <input type="number" class="form__field" id="cantidad_{{ material.id }}" name="cantidad_usada[]" placeholder="Cantidad" step="0.5" min="0" value="{% if material.id in cantidades %}{{ cantidades[material.id] }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                </div>
+            </form>
             </div>
         </div>
     </div>
