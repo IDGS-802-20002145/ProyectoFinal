@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/users.css') }}">
+        <h2 style="color:lightcoral" class="text-center">Pedidos</h2>
+        <a href="/catalogoC" class="btn btn-primary float-left"><i class="fa-solid fa-bag-shopping"></i> Seguir comprando 
+        </a>
+        <a href="/pedidos" class="btn btn-primary float-right"><i class="fa-solid fa-turn-down-left"></i> Mostrar todos</a>
+        <form method="POST" action="/findUser">
+            <label for="search">Search</label>
+            <input required="" type="search" class="input" id="search" name="search">
+            <span class="caret"></span>
+        </form>
+            {% if not detPed%}
+            <h1 class="text-info">No hay pedidos aún</h1>
+            {% else %}
+            <table class="table table-striped table-hover table-bordered">
+                <thead style="background-color: gray;">
+                    <th>No. Pedido</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Eliminar</th>
+                </thead>
+                <tbody>
+                    {% for dp in detPed%}
+                    <tr>
+                    <td>{{dp.pedido_id}}</td>
+                    <td>{{dp.producto.nombre}} </td>
+                    <td>{{dp.cantidad}}</td>
+                    <td>${{dp.producto.precio}}
+                    </td>
+                    <td><a href="/deleteUser?id={{dp.id}}" class="btn btn-danger btn-sm">Eliminar</a></td>
+                    </tr>
+                    {% endfor %}
+                    
+                
+                </tbody>
+            </table>
+            {% endif %}
+    </div>
+{% endblock %}
