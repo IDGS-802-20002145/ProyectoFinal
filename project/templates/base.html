@@ -40,6 +40,13 @@
                       href="{{ url_for('main.inventarios') }}">Inventario</a>
               </li>
                 {% endif%}
+
+                {% if current_user.admin %}
+                <li class="nav-item">
+                  <a class="nav-link"
+                      href="{{ url_for('main.catalogoCompras') }}">Compras</a>
+              </li>
+                {% endif%}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('auth.nosotros') }}">Nosotros</a>
                 </li>
