@@ -1,62 +1,100 @@
 {% extends "base.html" %}
 
 {% block content %}
+<link rel="stylesheet" href="../static/css/estilosButtons.css">
 <section class="section">
     <div class="container">
         <h3 class="title has-text-black text-center">Registro del Producto</h3>
         <div class="row justify-content-center">
-            <div class="col-lg-4">
+            <div class="col-lg-8">
                 <div class="card">
                     <div class="card-body">
-                        <h2 class="title is-4 has-text-black">Agregar ropa</h2>
                         <form method="POST" action="/administrador" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label class="label">Nombre de la prenda:</label>
-                                <input class="form-control" name="txtNombre" type="text"
-                                    placeholder="Ingresa el nombre de la prenda" id="txtNombre">
-                            </div>
+                            <div class="form-row">
+                                <div class="form__group field col-md-4">
+                                    <input required="" placeholder="Nombre" class="form__field" type="input"
+                                        name="nombre">
+                                    <label class="form__label" for="name" id="nombre" name="nombre">Nombre:</label>
+                                </div>
+                                <div class="form__group col-md-4">
+                                    <input type="text" class="form__field" id="color" name="color" required>
+                                    <label for="color" class="form__label">Color:</label>
+                                </div>
+                                <div class="form__group col-md-4">
+                                    <input type="text" class="form__field" id="modelo" name="modelo" required>
+                                    <label for="modelo" class="form__label">Modelo:</label>
+                                </div>
 
-                            <div class="form-group">
-                                <label class="label">Estilo:</label>
-                                <input class="form-control" name="txtEstilo" type="text"
-                                    placeholder="Ingresa el estilo de la prenda" id="txtEstilo">
                             </div>
+                            <div class="form-row">
+                                <div class="form__group col-md-4">
+                                    <select class="form__field" id="talla" name="talla" required>
+                                        <option value="">Selecciona una talla</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="G">G</option>
+                                    </select>
+                                    <label class="form__label" for="talla">Talla:</label>
+                                </div>
+                                <div class="form__group col-md-4">
+                                    <select class="form__field" id="stock_existencia" name="stock_existencia" required>
+                                        <option value="">Selecciona un lote de creación</option>
+                                        <option value="10">10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="25">25</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                    <label class="form__label" for="stock_existencia">Stock:</label>
+                                </div>
+                                <div class="form__group col-md-4">
+                                    <input type="number" class="form__field" id="precio" name="precio" step="0.01"
+                                        required>
+                                    <label for="precio" class="form__label">Precio:</label>
+                                </div>
 
-                            <div class="form-group">
-                                <label class="label">Descripción:</label>
-                                <textarea class="form-control" name="txtDescripcion"
-                                    placeholder="Ingresa la descripción de la prenda" id="txtDescripcion"></textarea>
+
                             </div>
-
-                            <div class="form-group">
-                                <label class="label">Precio:</label>
-                                <input class="form-control" name="txtPrecio" type="number"
-                                    placeholder="Ingresa el precio de la prenda" id="txtPrecio">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="label">Imagen:</label>
-                                <div class="custom-file">
-                                    <input class="custom-file-input" type="file" name="image" id="image">
-                                    <label class="custom-file-label" for="image">Selecciona un archivo…</label>
+                            <div class="form-row">
+                                <div class="form__group field col-md-6">
+                                    <textarea class="form__field" id="descripcion" name="descripcion"
+                                        rows="3"></textarea>
+                                    <label class="form__label" for="descripcion">Descripción:</label>
+                                </div>
+                                <div class="form__group col-md-6">
+                                    <input type="file" class="form__field" id="imagen" name="imagen" required>
+                                    <label for="imagen" class="form__label">Imagen:</label>
                                 </div>
                             </div>
-
-                            <div class="form-group text-center">
-                                <button class="btn btn-success" type="submit">Agregar</button>
-                                <a href="principalAd" class="btn btn-warning">
-                                    <span class="icon">
-                                        <i class="fas fa-undo"></i>
-                                    </span>
-                                    <span>Cancelar</span>
-                                </a>
+                            <div class="form__group">
+                                {% for material in materiales %}
+                                <div class="form-check-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="material_{{ material.id }}"
+                                            name="materiales" value="{{ material.id }}" class="form__field">
+                                        <label class="form-check-label" for="material_{{ material.id }}">{{
+                                            material.nombre }}</label>
+                                    </div>
+                                    <div class="form__group col-md-6">
+                                        <input type="number" class="form__field" id="cantidad_{{ material.id }}"
+                                            name="cantidad_usada[]" placeholder="Cantidad" step="0.5" min="0">
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <label for="materiales" class="form__label">Materiales utilizados:</label>
                             </div>
+
+
+                            <button class="my-3">
+                                Guardar
+                            </button>
+
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </section>
+
 {% endblock %}

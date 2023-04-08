@@ -32,13 +32,16 @@ def create_app():
 
     
 
-    #Registramos 2 blueprints
+    #Registramos los blueprints
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
 
 
-    from .Administrador.routes import administrador as admin_blueprint
+    from .Administrador.routes import  administrador  as admin_blueprint
     app.register_blueprint(admin_blueprint)
+
+    from .Cliente.routes import cliente as cliente_blueprint
+    app.register_blueprint(cliente_blueprint)
 
 
     from .main import main as main_blueprint

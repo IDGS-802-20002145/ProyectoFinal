@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Detalle de Pedido</h1>
+<h2>Pedido #{{ pedido.id }} - Fecha: {{ pedido.fecha }}</h2>
+
+<div class="row">
+    {% for producto in productos %}
+    <div class="col-sm-6 col-md-4">
+        <div class="card">
+            <img src="{{ detProductos[loop.index0].imagen }}" class="card-img-top"
+                alt="{{ detProductos[loop.index0].nombre }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ detProductos[loop.index0].nombre }}</h5>
+                <p class="card-text">Cantidad: {{ producto.cantidad }}</p>
+                <a href="" class="btn btn-primary">Ver
+                    Detalles</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+.container {
+    margin-top: 50px;
+}
+
+.card {
+    border: none;
+}
+
+.card-header {
+    border-radius: 0;
+}
+
+.form-group label {
+    font-weight: bold;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #5d9cec;
+}
+
+.btn-primary {
+    background-color: #5d9cec;
+    border-color: #5d9cec;
+}
+
+.btn-primary:hover {
+    background-color: #4a89dc;
+    border-color: #4a89dc;
+}
+
+.btn-primary:focus {
+    box-shadow: none;
+    background-color: #5d9cec;
+    border-color: #5d9cec;
+}
+
+.btn-primary:active {
+    background-color: #3b7ddd;
+    border-color: #3b7ddd;
+}

@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, flash, redirect, request, url_for,
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
 from . import db
-from project.models import Products, Role
+from project.models import Role, Producto
 from werkzeug.utils import secure_filename
 import logging
 from logging.handlers import RotatingFileHandler
@@ -33,8 +33,8 @@ def index():
 @main.route('/principalAd',methods=["GET","POST"])
 @login_required
 def principalAd():
-    productos = Products.query.all()
-
+    productos = Producto.query.filter_by(estatus=1).all()
+    
     if len(productos) == 0:
         productos = 0
 

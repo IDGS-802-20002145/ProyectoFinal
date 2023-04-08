@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Tus pedidos:</h1>
+  <div class="row">
+    {% for pedido in pedidos %}
+      <div class="col-md-4 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Esta lista fue generada el día: </h5>
+            <h5 class="card-title">{{ pedido.fecha.strftime('%d/%m/%Y') }}</h5>
+            <a href="/detallePedido?id={{pedido.id}}" class="btn btn-primary">Detalles</a>
+            <a href="/pagar?id={{pedido.id}}"  class="btn btn-success"><i class="fa-regular fa-credit-card fa-fade" style="color: #000000;"></i> Comprar Pedido</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
