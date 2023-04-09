@@ -19,7 +19,8 @@
                     <th>No. Pedido</th>
                     <th>Producto</th>
                     <th>Cantidad</th>
-                    <th>Precio</th>
+                    <th>Talla</th>
+                    <th>Precio Unitario</th>
                     <th>Eliminar</th>
                 </thead>
                 <tbody>
@@ -28,8 +29,9 @@
                             {% if dp.pedido.estatus != 0%}
                             <tr>
                             <td>{{dp.pedido_id}}</td>
-                            <td>{{dp.producto.nombre}} </td>
+                            <td>{{dp.producto.nombre}} </td>                            
                             <td>{{dp.cantidad}}</td>
+                            <td>{{dp.producto.talla}}</td>
                             <td>${{dp.producto.precio}}
                             </td>
                             <td><a href="eliminarPedido?id={{dp.pedido_id}}" class="btn btn-warning btn-sm">Remover</a></td>
@@ -41,6 +43,7 @@
                             <td>{{detPed.pedido_id}}</td>
                             <td>{{detPed.producto.nombre}} </td>
                             <td>{{detPed.cantidad}}</td>
+                            <td>{{detPed.producto.talla}}</td>
                             <td>${{detPed.producto.precio}}
                             </td>
                             <td><a href="eliminarPedido?id={{detPed.pedido_id}}" class="btn btn-warning btn-sm">Remover</a></td>

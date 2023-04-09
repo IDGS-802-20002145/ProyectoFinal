@@ -124,11 +124,12 @@
           
             
             <button class="btn btn-primary" onclick="verMas('{{modelo}}')">Ver más</button>
-            <form action="{{ url_for('cliente.pedidos', idProducto = tallaProducto) }}" method="POST"></form>
-            <input type="number" class="form-control my-2" placeholder="Cantidad del producto" style="display: none;" id="txtCantCar">
-            <button class="btn btn-success my-2"  onclick="cantCarrito()" id="btnAddCart0">Agregar al carrito</button>
-            <button class="btn btn-info my-2" id="addCart" style="display: none;" type="submit">Agregar al carrito</button>
-          </form>
+                        <button class="btn btn-success my-2"  onclick="cantCarrito('{{modelo}}')" id="btnAddCart{{modelo}}">Agregar al carrito</button>
+
+            <form id="{{loop.index-1}}" action="{{ url_for('cliente.pedidos') }}" method="POST" >   
+              <input type="number" class="form-control my-2" placeholder="Cantidad del producto" style="display: none;" id="txtCantCar{{modelo}}" name="txtCantCar">                   
+              <button type="submit" class="btn btn-info my-2" style="display: none;" onclick="actualizarFormulario('{{loop.index-1}}')" id="addCart{{modelo}}">Agregar al carrito</button>
+            </form>
           <br>
           
           </div>
@@ -146,13 +147,38 @@ function verMas(id){
     cardText[i].style.display = "table";     
   }
 }
-function cantCarrito(){
-  var cantCarrito = document.getElementById("txtCantCar");
-  var btnCarrito = document.getElementById("addCart");
-  var btnCarrito0 = document.getElementById("btnAddCart0");
+function cantCarrito(modelo){
+  //alert(modelo)
+  var cantCarrito = document.getElementById("txtCantCar"+modelo);
+  var btnCarrito = document.getElementById("addCart"+modelo);
+  var btnCarrito0 = document.getElementById("btnAddCart"+modelo);
+
   cantCarrito.style.display = "inline";
   btnCarrito.style.display = "inline";
   btnCarrito0.style.display = "none";
+}
+
+function actualizarFormulario(idForm) {
+
+  var radioButtons = document.getElementsByName('tallaProducto');
+  var selectedRadioButton = null;
+  
+  // Itera sobre todos los radio buttons y encuentra el seleccionado
+  for (var i = 0; i < radioButtons.length; i++) {
+    if (radioButtons[i].checked) {
+      selectedRadioButton = radioButtons[i];
+      break;
+    }
+  }
+  // Actualiza el valor del atributo "action" del formulario
+  if (selectedRadioButton !== null) {
+    var idSeleccionado = selectedRadioButton.value;
+
+    var url = "{{ url_for('cliente.pedidos', idProducto='') }}" + idSeleccionado;
+
+    document.getElementById(idForm).setAttribute('method', 'POST');
+    document.getElementById(idForm).setAttribute('action', url);
+  }
 }
   </script>
 {% endblock%}

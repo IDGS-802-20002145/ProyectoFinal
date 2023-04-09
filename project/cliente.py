@@ -44,7 +44,7 @@ def pedidos():
     if request.method == 'POST':
         #Datos del pedido
         userID = current_user.id
-        cantidad = 1
+        cantidad = request.form.get('txtCantCar')
         fecha_actual = date.today()
         fecha_actual_str = fecha_actual.strftime('%Y-%m-%d')
         #obten la fecha actual sin la hora
