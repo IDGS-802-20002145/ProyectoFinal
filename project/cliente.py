@@ -3,6 +3,7 @@ import uuid
 from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
+from sqlalchemy import func, text
 from . import db
 from project.models import DetPedido, Pedido, Producto, Products, Role
 from werkzeug.utils import secure_filename
@@ -32,9 +33,9 @@ def principalAd():
 @cliente.route('/pedidos',methods=["GET","POST"])
 @login_required
 def pedidos():
+    
     ids_pedidos = Pedido.query.with_entities(Pedido.id).filter_by(user_id= current_user.id).all()
     detPed = DetPedido.query.filter(DetPedido.pedido_id.in_([id_pedido[0] for id_pedido in ids_pedidos])).all()
-    
     producto_ids = [dp.producto_id for dp in detPed]
 
     # Hacer la consulta para obtener solo los productos con las IDs correspondientes
@@ -75,13 +76,63 @@ def pedidos():
 @cliente.route('/eliminarPedido',methods=["GET","POST"])
 @login_required
 def eliminarPedido():
+    print("entro a eliminar")
+    idPedido = request.args.get('id')
+    print(idPedido)
+    detPed = DetPedido.query.filter_by(pedido_id=idPedido).first()
     if request.method == 'POST':
-        return 0
-    return 0
+        pedido = Pedido.query.filter_by(id=idPedido).first()
+        pedido.estatus = 0
+        db.session.commit()
+        return redirect(url_for('cliente.pedidos'))
+    
+    return render_template('./pedidos/eliminarPedido.html', detPed = detPed)
+#arreglar buscar pedido
+@cliente.route('/buscarPedido',methods=["GET","POST"])
+@login_required
+def buscarPedido():
+    ids_pedidos = Pedido.query.with_entities(Pedido.id).filter_by(user_id= current_user.id).all()
+    detPed = DetPedido.query.filter(DetPedido.pedido_id.in_([id_pedido[0] for id_pedido in ids_pedidos])).all()
+    
+    if request.method == 'POST':   
+        search_term = request.form.get('search')
+        detPedR = DetPedido.query.filter(DetPedido.pedido_id.ilike(f'%{search_term}%')).first()                      
+        if not detPed:
+            flash("El pedido no existe", "error")
+            return redirect(url_for('cliente.pedidos'))
+        return render_template('./pedidos/pedidos.html', detPed = detPedR)
+    
+    return render_template('./pedidos/pedidos.html', detPed = detPed)
 
 @cliente.route('/catalogoC',methods=["GET","POST"])
 @login_required
 def catalogoC():
     prod = Producto.query.all()
-    return render_template('catalogoCliente.html', productos = prod)
+    modelos = db.session.query(Producto.modelo).distinct().all()
+    otrosAtributos = db.session.query(Producto.modelo,
+                                      Producto.imagen,
+                                      Producto.nombre,
+                                      Producto.precio,
+                                      Producto.color,
+                                      Producto.descripcion,
+                                      Producto.stock_existencia).group_by(Producto.modelo).all()
+    print(otrosAtributos)
+    productos_por_modelo = {}
+    
+    for modelo in modelos:
+        productos_por_modelo[modelo[0]] = []
+
+    for producto in prod:
+        modelo = producto.modelo
+        productos_por_modelo[modelo].append({
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'descripcion': producto.descripcion,
+            'precio': producto.precio,
+            'tallas': producto.talla
+        })
+
+    return render_template('catalogoCliente.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos)
+
+
 

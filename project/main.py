@@ -152,17 +152,43 @@ def modificar():
             filename = secure_filename(imagen.filename)
             imagen.save(os.path.join(ruta_imagen, filename))
             producto.imagen = filename
-        producto.stock_existencia = request.form.get('stock_existencia')
+        
+        # Obtener el stock anterior y el nuevo stock
+        stock_anterior = producto.stock_existencia
+        nuevo_stock = request.form.get('stock_existencia')
+        print(stock_anterior)
+
+        # Calcular la cantidad de materia prima necesaria para producir el nuevo stock
+        explotacion_materiales = ExplotacionMaterial.query.filter_by(producto_id=producto.id).all()
+        for em in explotacion_materiales:
+            cantidad_material = em.cantidadIndividual * int(nuevo_stock)
+            if cantidad_material > 0:
+                # Crear un nuevo objeto ExplotacionMaterial para cada material utilizado
+                nuevo_em = ExplotacionMaterial(producto_id=producto.id, material_id=em.material_id,cantidad_usada=cantidad_material ,cantidadIndividual=em.cantidadIndividual)
+                db.session.add(nuevo_em)
+
+                # Disminuir la cantidad de material en el inventario correspondiente
+                inventario_material = InventarioMateriaPrima.query.get(em.material_id)
+                inventario_material.cantidad -= abs(cantidad_material)
+                db.session
+
+        # Actualizar el stock del producto
+        producto.stock_existencia = nuevo_stock
+
+        # Guardar todos los objetos creados y modificados
         db.session.add(producto)
         db.session.commit()
         flash("El registro se ha modificado exitosamente.", "exito")
         return redirect(url_for('main.principalAd'))
+    
     elif request.method == 'GET':
         materiales = InventarioMateriaPrima.query.all()
-        print(producto.explotacion_material)
-        explotacion= ExplotacionMaterial.query.filter_by(producto_id=producto.id).all()
-        return render_template('modificar.html', producto=producto, id=id, materiales=materiales, explotacion=explotacion)
+        explotacion = ExplotacionMaterial.query.filter_by(producto_id=producto.id).all()
+        cantidades = {exp.material_id: exp.cantidadIndividual for exp in explotacion}
 
+        return render_template('modificar.html', producto=producto, id=id, 
+                            materiales=materiales, explotacion=explotacion, 
+                            cantidades=cantidades)
 
 @main.route('/eliminar', methods=['GET', 'POST'])
 @login_required

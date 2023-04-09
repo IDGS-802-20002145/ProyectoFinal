@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container">
-      <link rel="stylesheet" href="{{ url_for('static', filename='css/users.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/pedidos.css') }}">
         <h2 style="color:lightcoral" class="text-center">Pedidos</h2>
         <a href="/catalogoC" class="btn btn-primary float-left"><i class="fa-solid fa-bag-shopping"></i> Seguir comprando 
         </a>
         <a href="/pedidos" class="btn btn-primary float-right"><i class="fa-solid fa-turn-down-left"></i> Mostrar todos</a>
-        <form method="POST" action="/findUser">
+        <form method="POST" action="/buscarPedido">
             <label for="search">Search</label>
             <input required="" type="search" class="input" id="search" name="search">
             <span class="caret"></span>
@@ -23,17 +23,29 @@
                     <th>Eliminar</th>
                 </thead>
                 <tbody>
-                    {% for dp in detPed%}
-                    <tr>
-                    <td>{{dp.pedido_id}}</td>
-                    <td>{{dp.producto.nombre}} </td>
-                    <td>{{dp.cantidad}}</td>
-                    <td>${{dp.producto.precio}}
-                    </td>
-                    <td><a href="/deleteUser?id={{dp.id}}" class="btn btn-danger btn-sm">Eliminar</a></td>
-                    </tr>
-                    {% endfor %}
-                    
+                    {% if detPed is iterable%}
+                        {% for dp in detPed%}
+                            {% if dp.pedido.estatus != 0%}
+                            <tr>
+                            <td>{{dp.pedido_id}}</td>
+                            <td>{{dp.producto.nombre}} </td>
+                            <td>{{dp.cantidad}}</td>
+                            <td>${{dp.producto.precio}}
+                            </td>
+                            <td><a href="eliminarPedido?id={{dp.pedido_id}}" class="btn btn-warning btn-sm">Remover</a></td>
+                            </tr>                    
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td>{{detPed.pedido_id}}</td>
+                            <td>{{detPed.producto.nombre}} </td>
+                            <td>{{detPed.cantidad}}</td>
+                            <td>${{detPed.producto.precio}}
+                            </td>
+                            <td><a href="eliminarPedido?id={{detPed.pedido_id}}" class="btn btn-warning btn-sm">Remover</a></td>
+                            </tr>
+                    {% endif%}
                 
                 </tbody>
             </table>
