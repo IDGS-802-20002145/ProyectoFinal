@@ -12,35 +12,26 @@
     <p>{{ producto.descripcion }}</p>
     <p>Precio: ${{ producto.precio }}</p>
     <p>Cantidad: {{ producto.cantidad }}</p>
-    
+
 </div>
 {% endfor %}
 <h3>El total es ${{ total }}</h3>
 
-<form method="post">
-    <label for="metodo_pago">Método de pago:</label>
-    <div class="payment-buttons">
-        <button type="submit" name="metodo_pago" value="efectivo">Efectivo</button>
-        <button type="submit" name="metodo_pago" value="tarjeta">Tarjeta</button>
+<form method="post" action="/pagar">
+    <div>
+        <label for="metodo_pago">Seleccione método de pago:</label>
+        <select id="metodo_pago" name="metodo_pago">
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta</option>
+        </select>
+    </div>
+    <div>
+        <input type="hidden" name="id" value="{{ id }}">
+        <button type="submit">Continuar</button>
     </div>
 </form>
 
 
 
-<style>
-    .producto {
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 10px;
-        margin: 10px;
-        display: inline-block;
-        width: 200px;
-    }
-
-    .producto img {
-        max-width: 100%;
-        height: auto;
-    }
-</style>
 
 {% endblock %}

@@ -70,11 +70,13 @@ class Pedido(db.Model):
 
 
 class DetPedido(db.Model):
-    __tablename__ = 'DetPedido'
-    id = db.Column(db.Integer, primary_key=True)
+    _tablename_ = 'detpedido'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     pedido_id = db.Column(db.Integer, db.ForeignKey('Pedido.id'), nullable=False)
     producto_id = db.Column(db.Integer, db.ForeignKey('Producto.id'), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False)
+    pedido = db.relationship('Pedido', overlaps="pedido_details")
+    producto = db.relationship('Producto', overlaps="det_pedido,producto_detalle")
 
 
 class InventarioMateriaPrima(db.Model):
