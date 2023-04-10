@@ -256,6 +256,30 @@ def compras():
         flash("La compra se ha realizado exitosamente.", "success")
         return redirect(url_for('administrador.inventarios'))
 
+@administrador.route('/catalogoCompras', methods=['GET', 'POST'])
+@login_required
+def catalogoCompras():
+
+    fecha = request.form.get('fecha')
+
+    if fecha:
+        compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
+                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
+                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
+                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
+                    .filter(Compra.fecha == fecha)\
+                    .all()
+    else:
+        compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
+                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
+                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
+                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
+                    .all()
+
+    return render_template('catalogoCompras.html', compras=compras)
+
+
+
 
 
 ###################### Modulo de Materia Prima ######################
@@ -296,6 +320,23 @@ def modificarMaterial():
         return redirect(url_for('administrador.inventarios'))
     elif request.method == 'GET':
         return render_template('modificarMateriaPrima.html', material=material, id=id)
+
+@administrador.route('/eliminarMaterial', methods=['GET', 'POST'])
+@login_required
+def eliminarMaterial():
+    id = request.args.get('id')
+    material = InventarioMateriaPrima.query.get(id)
+    if material is None:
+        flash("El material no existe", "error")
+        return redirect(url_for('main.inventarios'))
+    if request.method == 'POST':
+        material.estatus = 0
+        db.session.add(material)
+        db.session.commit()
+        flash("El registro se ha eliminado exitosamente.", "exito")
+        return redirect(url_for('main.inventarios'))
+    elif request.method == 'GET':
+        return render_template('eliminarMateriaPrima.html', material=material, id=id)
 
 
 

@@ -310,6 +310,119 @@ def pago_tarjeta():
 
 
 
+@cliente.route('/pagarTodo', methods=['GET', 'POST'])
+@login_required
+def pagarTodo():    
+    if request.method == 'GET':
+       pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).filter(DetPedido.cantidad <= DetPedido.producto.stock_existencia).all()
+       detProductos = []
+       total = 0
+       for pedido in pedidos_disponibles:
+           productos = DetPedido.query.filter_by(pedido_id=pedido.id).all()
+           for producto in productos:
+               prod = Producto.query.filter_by(id=producto.producto_id).first()
+               total += prod.precio * producto.cantidad
+               prod.cantidad = producto.cantidad
+               detProductos.append(prod)
+    #     id = request.args.get('id')
+    #     pedido = Pedido.query.filter_by(id=id, estatus=1).first()
+    #     productos = DetPedido.query.filter_by(pedido_id=id).all()        
+    #     detProductos = []
+    #     total = 0
+    #     for producto in productos:
+    #         prod = Producto.query.filter_by(id=producto.producto_id).first()
+    #         total += prod.precio * producto.cantidad
+    #         prod.cantidad = producto.cantidad
+    #         detProductos.append(prod)
+
+    # if request.method == 'POST':
+    #     id = request.form.get('id')
+    #     pedido = Pedido.query.filter_by(id=id, estatus=1).first()
+    #     if request.form['metodo_pago'] == 'efectivo':
+    #         id = request.form.get('id')
+    #         print(id, " Es el id del pedido")
+    #         pedido = Pedido.query.filter_by(id=id).first()
+    #         print(pedido, " Es el pedido")
+    #         # Cambiar estatus del pedido a 2
+    #         pedido.estatus = 2
+    #         db.session.commit()
+            
+    #         # Insertar en tabla venta
+    #         venta = Venta(user_id=current_user.id, fecha=datetime.now().date())
+    #         db.session.add(venta)
+    #         db.session.commit()
+            
+    #         productos = DetPedido.query.filter_by(pedido_id=id).all()
+    #         # Insertar detalle en tabla detventa
+    #         for producto in productos:
+    #             prod = Producto.query.filter_by(id=producto.producto_id).first()
+    #             detventa = DetVenta(venta_id=venta.id, producto_id=prod.id, cantidad=producto.cantidad, precio=prod.precio)
+    #             db.session.add(detventa)
+    #             prod.stock_existencia -= producto.cantidad
+    #             db.session.commit()
+            
+    #          # Generar archivo PDF
+    #         output = io.BytesIO()
+    #         doc = SimpleDocTemplate(output, pagesize=letter)
+    #         styles = getSampleStyleSheet()
+    #         Story = []
+    #         # Agregar encabezado
+    #         #im = Image("../static/img/logo_size_invert.jpg", width=150, height=150)
+    #         #Story.append(im)
+    #         Story.append(Spacer(1, 12))
+    #         Story.append(Paragraph("Sartorial", styles["Title"]))
+    #         Story.append(Spacer(1, 12))
+    #         Story.append(Paragraph(f"Fecha: {datetime.now().date()}", styles["Normal"]))
+    #         Story.append(Paragraph(f"Cliente: {current_user.name}", styles["Normal"]))
+    #         Story.append(Spacer(1, 12))
+    #         # Agregar detalles del pedido
+    #         detProductos = []
+    #         totalFac = 0
+    #         for producto in productos:
+    #             prod = Producto.query.filter_by(id=producto.producto_id).first()
+    #             totalFac += prod.precio * producto.cantidad
+    #             prod.cantidad = producto.cantidad
+    #             detProductos.append([prod.nombre, f"${prod.precio}", f"{producto.cantidad}"])
+    #         tableStyle = [('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+    #                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+    #                     ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+    #                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+    #                     ('FONTSIZE', (0, 0), (-1, 0), 14),
+    #                     ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+    #                     ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    #                     ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+    #                     ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+    #                     ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+    #                     ('FONTSIZE', (0, 1), (-1, -1), 12),
+    #                     ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+    #                     ('BACKGROUND', (0, -1), (-1, -1), colors.grey),
+    #                     ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
+    #                     ('ALIGN', (0, -1), (-1, -1), 'CENTER'),
+    #                     ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+    #                     ('FONTSIZE', (0, -1), (-1, -1), 14),
+    #                     ('TOPPADDING', (0, -1), (-1, -1),12)]
+    #         t = Table([["Producto", "Precio", "Cantidad"]] + detProductos)
+    #         t.setStyle(tableStyle)
+    #         Story.append(t)
+    #         Story.append(Spacer(1, 12))
+    #         #Agregar total a pagar
+
+    #         Story.append(Paragraph(f"Total a pagar: ${totalFac}", styles["Normal"]))
+    #         doc.build(Story)
+            
+    #         #Descargar archivo PDF
+    #         output.seek(0)
+    #         response = make_response(output.getvalue())
+    #         response.headers.set('Content-Disposition', 'attachment', filename=f'ticket{datetime.now().date()}.pdf')
+    #         response.headers.set('Content-Type', 'application/pdf')
+    #         flash("El pedido se ha pagado con éxito", "success")
+                        
+    #         return response
+                   
+    #     elif request.form['metodo_pago'] == 'tarjeta':
+    #         id = request.form.get('id')
+    #         return render_template('pago_tarjeta.html', id=id)
+    return render_template('pagar.html', detProductos=detProductos, pedidos=pedidos_disponibles, total=total)
 
 
 

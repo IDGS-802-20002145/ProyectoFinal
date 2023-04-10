@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1>Compras realizadas</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <form class="form-inline" method="POST">
+                <div class="form-group">
+                    <label for="fecha">Fecha de compra :</label>
+                    <input type="date" class="form-control mx-2" id="fecha" name="fecha">
+                </div>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </form>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Proveedor</th>
+                        <th>Material</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for compra, det, mat, prov in compras %}
+                    <tr>
+                        <td>{{ compra.fecha }}</td>
+                        <td>{{ prov.nombre }}</td>
+                        <td>{{ mat.nombre }}</td>
+                        <td>{{ det.cantidad }}</td>
+                        <td>${{ det.precio }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
