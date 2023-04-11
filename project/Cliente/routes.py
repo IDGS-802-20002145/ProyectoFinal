@@ -20,6 +20,7 @@ from ..Cliente.pedidos import redireccionamiento
 from project.models import Pedido, Producto, DetPedido, Venta, DetVenta
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
+from sqlalchemy.orm import joinedload
 
 
 cliente = Blueprint('cliente', __name__)
@@ -30,7 +31,30 @@ cliente = Blueprint('cliente', __name__)
 def catalogoC():
     prod = Producto.query.all()
     modelos = db.session.query(Producto.modelo).distinct().all()
-    return render_template('catalogoCliente.html', productos = prod, modelos=modelos)
+    otrosAtributos = db.session.query(Producto.modelo,
+                                      Producto.imagen,
+                                      Producto.nombre,
+                                      Producto.precio,
+                                      Producto.color,
+                                      Producto.descripcion,
+                                      Producto.stock_existencia).group_by(Producto.modelo).all()
+    print(otrosAtributos)
+    productos_por_modelo = {}
+    
+    for modelo in modelos:
+        productos_por_modelo[modelo[0]] = []
+
+    for producto in prod:
+        modelo = producto.modelo
+        productos_por_modelo[modelo].append({
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'descripcion': producto.descripcion,
+            'precio': producto.precio,
+            'tallas': producto.talla
+        })
+
+    return render_template('catalogoCliente.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos)
 
 ###################### Modulo de pedidos ######################
 
@@ -38,7 +62,7 @@ def catalogoC():
 @login_required
 def pedidos():
     
-    ids_pedidos = Pedido.query.with_entities(Pedido.id).filter_by(user_id= current_user.id, estatus=1).all()
+    ids_pedidos = Pedido.query.with_entities(Pedido.id).filter_by(user_id= current_user.id, estatus = 1).all()
     detPed = DetPedido.query.filter(DetPedido.pedido_id.in_([id_pedido[0] for id_pedido in ids_pedidos])).all()
     producto_ids = [dp.producto_id for dp in detPed]
 
@@ -48,13 +72,14 @@ def pedidos():
     if request.method == 'POST':
         #Datos del pedido
         userID = current_user.id
+        cantidad = request.form.get('txtCantCar', " Esta es la cantidad")
         fecha_actual = date.today()
         fecha_actual_str = fecha_actual.strftime('%Y-%m-%d')
         #obten la fecha actual sin la hora
         # 1 Es pedido , 2 es compra y 0 es eliminado
         estatus = 1
         print(userID)
-        pedido = Pedido(user_id = userID,
+        pedido = Pedido(user_id = userID,                        
                         fecha = fecha_actual_str,
                         estatus = estatus)
         db.session.add(pedido)
@@ -66,14 +91,14 @@ def pedidos():
             id_obtenido = consPedido.id
         pedidoID = id_obtenido
         productoID = request.args.get('idProducto')
-        cantidad = 1
+        cantidad = cantidad
                  
         detPed = DetPedido(pedido_id = pedidoID, producto_id = productoID,cantidad = cantidad)
         db.session.add(detPed)
         db.session.commit()
         return redirect(url_for('cliente.catalogoC'))
     
-    return render_template('pedidos.html', detPed=detPed, productos=productos)
+    return render_template('pedidos.html', detPed = detPed, productos = productos)
 
 @cliente.route('/eliminarPedido',methods=["GET","POST"])
 @login_required
@@ -90,6 +115,7 @@ def eliminarPedido():
     
     return render_template('eliminarPedido.html', detPed = detPed)
 #arreglar buscar pedido
+
 @cliente.route('/buscarPedido',methods=["GET","POST"])
 @login_required
 def buscarPedido():
@@ -102,7 +128,7 @@ def buscarPedido():
         if not detPed:
             flash("El pedido no existe", "error")
             return redirect(url_for('cliente.pedidos'))
-        return render_template('/pedidos.html', detPed = detPedR)
+        return render_template('./pedidos/pedidos.html', detPed = detPedR)
     
     return render_template('pedidos.html', detPed = detPed)
 
@@ -314,7 +340,7 @@ def pago_tarjeta():
 @login_required
 def pagarTodo():    
     if request.method == 'GET':
-       pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).filter(DetPedido.cantidad <= DetPedido.producto.stock_existencia).all()
+       pedidos_disponibles = Pedido.query.join(DetPedido).join(Producto).filter(Pedido.estatus==1, DetPedido.cantidad <= Producto.stock_existencia).all()
        detProductos = []
        total = 0
        for pedido in pedidos_disponibles:
@@ -324,43 +350,29 @@ def pagarTodo():
                total += prod.precio * producto.cantidad
                prod.cantidad = producto.cantidad
                detProductos.append(prod)
-    #     id = request.args.get('id')
-    #     pedido = Pedido.query.filter_by(id=id, estatus=1).first()
-    #     productos = DetPedido.query.filter_by(pedido_id=id).all()        
-    #     detProductos = []
-    #     total = 0
-    #     for producto in productos:
-    #         prod = Producto.query.filter_by(id=producto.producto_id).first()
-    #         total += prod.precio * producto.cantidad
-    #         prod.cantidad = producto.cantidad
-    #         detProductos.append(prod)
+   
+    return render_template('pagarTodo.html', detProductos=detProductos, pedidos=pedidos_disponibles, total=total)
 
     # if request.method == 'POST':
-    #     id = request.form.get('id')
-    #     pedido = Pedido.query.filter_by(id=id, estatus=1).first()
+
     #     if request.form['metodo_pago'] == 'efectivo':
-    #         id = request.form.get('id')
-    #         print(id, " Es el id del pedido")
-    #         pedido = Pedido.query.filter_by(id=id).first()
-    #         print(pedido, " Es el pedido")
-    #         # Cambiar estatus del pedido a 2
-    #         pedido.estatus = 2
-    #         db.session.commit()
-            
-    #         # Insertar en tabla venta
+    #         pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).all()
+    #         for pedido in pedidos_disponibles:
+    #             pedido.estatus = 2
+
     #         venta = Venta(user_id=current_user.id, fecha=datetime.now().date())
     #         db.session.add(venta)
-    #         db.session.commit()
-            
-    #         productos = DetPedido.query.filter_by(pedido_id=id).all()
-    #         # Insertar detalle en tabla detventa
-    #         for producto in productos:
-    #             prod = Producto.query.filter_by(id=producto.producto_id).first()
-    #             detventa = DetVenta(venta_id=venta.id, producto_id=prod.id, cantidad=producto.cantidad, precio=prod.precio)
+
+    #         detPedidos = DetPedido.query.filter(DetPedido.pedido_id.in_([pedido.id for pedido in pedidos_disponibles])).all()
+
+    #         for detalle_pedido in detPedidos:
+    #             producto = detalle_pedido.producto
+    #             producto.stock_existencia -= detalle_pedido.cantidad
+    #             detventa = DetVenta(venta_id=venta.id, producto_id=producto.id, cantidad=detalle_pedido.cantidad, precio=producto.precio)
     #             db.session.add(detventa)
-    #             prod.stock_existencia -= producto.cantidad
-    #             db.session.commit()
-            
+
+    #         db.session.commit()
+
     #          # Generar archivo PDF
     #         output = io.BytesIO()
     #         doc = SimpleDocTemplate(output, pagesize=letter)
@@ -374,15 +386,20 @@ def pagarTodo():
     #         Story.append(Spacer(1, 12))
     #         Story.append(Paragraph(f"Fecha: {datetime.now().date()}", styles["Normal"]))
     #         Story.append(Paragraph(f"Cliente: {current_user.name}", styles["Normal"]))
+    #         Story.append(Paragraph(f"Referencia #1234567890", styles["Normal"]))
+    #         Story.append(Paragraph(f"Cuenta Bancaria: 8675309012345", styles["Normal"]))
+    #         Story.append(Paragraph(f"Titular de la cuenta: Sartorial", styles["Normal"]))             
     #         Story.append(Spacer(1, 12))
     #         # Agregar detalles del pedido
-    #         detProductos = []
+    #         detProductosPOST = []
     #         totalFac = 0
-    #         for producto in productos:
-    #             prod = Producto.query.filter_by(id=producto.producto_id).first()
-    #             totalFac += prod.precio * producto.cantidad
-    #             prod.cantidad = producto.cantidad
-    #             detProductos.append([prod.nombre, f"${prod.precio}", f"{producto.cantidad}"])
+    #         for detalle_pedido in detPedidos:
+    #             producto = detalle_pedido.producto
+    #             prod = Producto.query.filter_by(id=producto.id).first()
+    #             totalFac += prod.precio * detalle_pedido.cantidad
+    #             prod.cantidad = detalle_pedido.cantidad
+    #             detProductosPOST.append([prod.nombre, f"${prod.precio}", f"{detalle_pedido.cantidad}"])     
+
     #         tableStyle = [('BACKGROUND', (0, 0), (-1, 0), colors.grey),
     #                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
     #                     ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
@@ -401,7 +418,7 @@ def pagarTodo():
     #                     ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
     #                     ('FONTSIZE', (0, -1), (-1, -1), 14),
     #                     ('TOPPADDING', (0, -1), (-1, -1),12)]
-    #         t = Table([["Producto", "Precio", "Cantidad"]] + detProductos)
+    #         t = Table([["Producto", "Precio", "Cantidad"]] + detProductosPOST)
     #         t.setStyle(tableStyle)
     #         Story.append(t)
     #         Story.append(Spacer(1, 12))
@@ -418,11 +435,6 @@ def pagarTodo():
     #         flash("El pedido se ha pagado con éxito", "success")
                         
     #         return response
-                   
-    #     elif request.form['metodo_pago'] == 'tarjeta':
-    #         id = request.form.get('id')
-    #         return render_template('pago_tarjeta.html', id=id)
-    return render_template('pagar.html', detProductos=detProductos, pedidos=pedidos_disponibles, total=total)
 
 
 

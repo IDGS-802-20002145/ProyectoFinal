@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Confirmación de Pago</h1>
+
+
+{% for producto in detProductos %}
+<div class="producto">
+    <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" alt="">
+    <h2>{{ producto.nombre }}</h2>
+    <p>{{ producto.descripcion }}</p>
+    <p>Precio: ${{ producto.precio }}</p>
+    <p>Cantidad: {{ producto.cantidad }}</p>
+
+</div>
+{% endfor %}
+<h3>El total es ${{ total }}</h3>
+
+<form method="post" action="/pagarTodo">
+    <div>
+        <label for="metodo_pago">Seleccione método de pago:</label>
+        <select id="metodo_pago" name="metodo_pago">
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta</option>
+        </select>
+    </div>
+    <div>
+        <input type="hidden" name="id" value="{{ id }}">
+        <button type="submit">Continuar</button>
+    </div>
+</form>
+
+
+
+
+{% endblock %}
