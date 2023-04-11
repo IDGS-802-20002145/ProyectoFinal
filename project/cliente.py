@@ -107,7 +107,8 @@ def buscarPedido():
 @cliente.route('/catalogoC',methods=["GET","POST"])
 @login_required
 def catalogoC():
-    prod = Producto.query.all()
+
+    prod = Producto.query.filter(Producto.estatus == 1).all()
     modelos = db.session.query(Producto.modelo).distinct().all()
     otrosAtributos = db.session.query(Producto.modelo,
                                       Producto.imagen,
@@ -115,7 +116,8 @@ def catalogoC():
                                       Producto.precio,
                                       Producto.color,
                                       Producto.descripcion,
-                                      Producto.stock_existencia).group_by(Producto.modelo).all()
+                                      Producto.stock_existencia,
+                                      Producto.estatus).group_by(Producto.modelo).all()
     print(otrosAtributos)
     productos_por_modelo = {}
     

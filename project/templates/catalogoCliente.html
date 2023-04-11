@@ -88,57 +88,65 @@
 <div class="container">
     <h1 class="text-center my-4">Productos Destacados</h1>
     <p>Estos son algunos de nuestros productos más populares:</p>
-    <div class="card-deck">  
+    <div class="row">  
       {% set cont = 0%}
       {% for modelo, productos in productos_por_modelo.items() %}
+      {% if otrosAtributos[loop.index-1].estatus == 1%}
+      <div class="col-4"> 
         <div class="card mb-4">
-          <div class="card-body" style="box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3)" id="{{modelo}}">
-            
-            {%  if modelo == otrosAtributos[loop.index-1].modelo %}
-            
-            <img class="card-img-top" src="{{ url_for('static', filename='img/' + otrosAtributos[loop.index-1].imagen) }}" alt="Card image cap" height="360">
-            <p class="card-text h4" style="display: table; text-align: center;">{{otrosAtributos[loop.index-1].nombre}}</p>
-            <p class="card-text h5" style="display: table;">Precio: ${{otrosAtributos[loop.index-1].precio}}</p>
-            <p class="card-text h5" style="display: table;">Color: {{otrosAtributos[loop.index-1].color}}</p>
-            <p class="card-text h5" style="display: none;">Descripción: {{otrosAtributos[loop.index-1].descripcion}}</p>
-            <p class="card-text h5" style="display: none;">Stock: {{otrosAtributos[loop.index-1].stock_existencia }}</p>            
-            {% endif %}
+          <div class="card-body" style="box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3)" id="{{modelo}}">            
+              {%  if modelo == otrosAtributos[loop.index-1].modelo%}            
+                <img class="card-img-top" src="{{ url_for('static', filename='img/' + otrosAtributos[loop.index-1].imagen) }}" alt="Card image cap" height="350">
+                <p class="card-text h4" style="display: table; text-align: center;">{{otrosAtributos[loop.index-1].nombre}}</p>
+                <p class="card-text h5" style="display: table;">Precio: ${{otrosAtributos[loop.index-1].precio}}</p>
+                <p class="card-text h5" style="display: table;">Color: {{otrosAtributos[loop.index-1].color}}</p>
+                <p class="card-text h5" style="display: none;">Descripción: {{otrosAtributos[loop.index-1].descripcion}}</p>
+                <p class="card-text h5" style="display: none;">              
+                  {% if otrosAtributos[loop.index-1].stock_existencia < 1 %}                            
+                    No hay existencias 
+                    {% endif %}
+                    Cantidades en existencia:                                   
+                </p>            
+              <h5 class="card-text h5" style="display: table;">Modelo : {{ modelo }}</h5>
+              <p class="card-text h5">Tallas disponibles: </p>
+              {% endif %}
+              {% for producto in productos %}
+              {% set cont = cont + otrosAtributos[loop.index-1].stock_existencia %}
+              Cantidad disponible : {{ cont }}
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="tallaProducto" id="{{ producto.id }}" value="{{ producto.id }}">
+                <label class="form-check-label" for="{{ producto.id }}">
+                  {% if producto.tallas == 'S'%}
+                  Chica
+                  {% elif producto.tallas == 'M'%}
+                  Mediana
+                  {% elif producto.tallas == 'G'%}
+                  Grande
+                  {% endif %}
+                </label>
+              </div>
+            {% endfor %}
+          
+              <button class="btn btn-primary" onclick="verMas('{{modelo}}')">Ver más</button>
+                          <button class="btn btn-success my-2"  onclick="cantCarrito('{{modelo}}')" id="btnAddCart{{modelo}}">Agregar al carrito</button>
 
-            
-            <h5 class="card-text h5" style="display: table;">Modelo : {{ modelo }}</h5>
-            <p class="card-text h5">Tallas disponibles: </p>
-            {% for producto in productos %}
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="tallaProducto" id="{{ producto.id }}" value="{{ producto.id }}">
-              <label class="form-check-label" for="{{ producto.id }}">
-                {% if producto.tallas == 'S'%}
-                Chica
-                {% elif producto.tallas == 'M'%}
-                Mediana
-                {% elif producto.tallas == 'G'%}
-                Grande
-                {% endif %}
-              </label>
+              <form id="{{loop.index-1}}" action="{{ url_for('cliente.pedidos') }}" method="POST" >   
+                <input type="number" class="form-control my-2" placeholder="Cantidad del producto" style="display: none;" id="txtCantCar{{modelo}}" name="txtCantCar">                   
+                <button type="submit" class="btn btn-info my-2" style="display: none;" onclick="actualizarFormulario('{{loop.index-1}}')" id="addCart{{modelo}}">Agregar al carrito</button>
+              </form>
+            <br>
+              </div>
             </div>
-          {% endfor %}
-          
-            
-            <button class="btn btn-primary" onclick="verMas('{{modelo}}')">Ver más</button>
-                        <button class="btn btn-success my-2"  onclick="cantCarrito('{{modelo}}')" id="btnAddCart{{modelo}}">Agregar al carrito</button>
-
-            <form id="{{loop.index-1}}" action="{{ url_for('cliente.pedidos') }}" method="POST" >   
-              <input type="number" class="form-control my-2" placeholder="Cantidad del producto" style="display: none;" id="txtCantCar{{modelo}}" name="txtCantCar">                   
-              <button type="submit" class="btn btn-info my-2" style="display: none;" onclick="actualizarFormulario('{{loop.index-1}}')" id="addCart{{modelo}}">Agregar al carrito</button>
-            </form>
-          <br>
-          
-          </div>
         </div>
-      {% endfor %}
+        {%endif%} 
+        {% endfor %}
       
     
+      </div>
     </div>
   </div>
+
+
   <script>
 function verMas(id){          
   var cardBody = document.getElementById(id);
