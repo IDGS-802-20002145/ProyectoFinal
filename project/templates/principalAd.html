@@ -19,6 +19,13 @@
         <span aria-hidden="true">×</span>
     </button>
 </div>
+{% elif category == 'warning' %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
 {% endif %}
 {% endfor %}
 <script>
@@ -86,6 +93,10 @@
                         <td>{{ produc.stock_existencia|int}}</td>
                         <td>
                             <div class="btn-group" role="group">
+                                <div>
+                                    <a href="actualizarStock?id={{ produc.id }}" class="btn btn-primary btn-sm"
+                                        title="actualizar el stock" >Stock</a>
+                                </div>
                                 <div>
                                     <a href="modificar?id={{ produc.id }}" class="btn btn-info btn-sm"
                                         title="Modifcar">Editar</a>

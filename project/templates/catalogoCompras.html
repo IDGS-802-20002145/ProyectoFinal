@@ -1,14 +1,69 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid">
-    <h1>Compras realizadas</h1>
+<div class="container-fluid" id="comprasP">
+    <h1>Compras Pendientes</h1>
+    <form method="POST" action="{{ url_for('main.catalogoCompras') }}">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="fecha">Fecha de compra :</label>
+                    <input type="date" class="form-control mx-2" id="fecha" name="fecha">
+                </div>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>Material</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th> </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for compra, det, mat, prov in compras %}
+                        <tr>
+                            <td>{{ compra.fecha }}</td>
+                            <td>{{ prov.nombre }}</td>
+                            <td>{{ mat.nombre }}</td>
+                            <td>{{ det.cantidad }}</td>
+                            <td>${{ det.precio }}</td>
+                            <td>
+                            <form method="POST" action="{{ url_for('main.catalogoCompras') }}">
+                            <input type="hidden" name="idCompra" value="{{ compra.id }}">   
+                            <input type="hidden" name="idMaterial" value="{{ mat.id }}">
+                            <input type="hidden" name="idProveedor" value="{{ prov.id }}">
+                            <input type="hidden" name="idDetalle" value="{{ det.id }}">
+                            <input type="hidden" name="cantidad" value="{{ det.cantidad }}">
+                            <input type="hidden" name="precio" value="{{ det.precio }}">
+                            <button type="submit" class="btn btn-success" name="confirmar">Confirmar compra </button>
+                            </td>
+                            </form>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div class="container-fluid" id="comprasR">
+    <h1>Compras Realizadas</h1>
     <div class="row">
         <div class="col-md-6">
             <form class="form-inline" method="POST">
                 <div class="form-group">
-                    <label for="fecha">Fecha de compra :</label>
-                    <input type="date" class="form-control mx-2" id="fecha" name="fecha">
+                    <label for="fechaR">Fecha de compra :</label>
+                    <input type="date" class="form-control mx-2" id="fechaR" name="fechaR">
                 </div>
                 <button type="submit" class="btn btn-primary">Buscar</button>
             </form>
@@ -25,16 +80,17 @@
                         <th>Material</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
+                        <th> </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for compra, det, mat, prov in compras %}
+                    {% for compraR, detR, matR, provR in comprasRealizadas %}
                     <tr>
-                        <td>{{ compra.fecha }}</td>
-                        <td>{{ prov.nombre }}</td>
-                        <td>{{ mat.nombre }}</td>
-                        <td>{{ det.cantidad }}</td>
-                        <td>${{ det.precio }}</td>
+                        <td>{{ compraR.fecha }}</td>
+                        <td>{{ provR.nombre }}</td>
+                        <td>{{ matR.nombre }}</td>
+                        <td>{{ detR.cantidad }}</td>
+                        <td>${{ detR.precio }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

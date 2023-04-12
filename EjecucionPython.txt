@@ -1,0 +1,5 @@
+ejecutar Flask de mena
+SET FLASK_APP=project
+SET FLASK_ENV=development
+SET FLASK_DEBUG=1
+flask run

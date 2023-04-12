@@ -18,3 +18,23 @@ function mostrarDashboard(){
     $('#dashboard2').show();
     $('#ver-detalles').show();
 }
+
+function ocultarMaterialesUsados(){
+    $('#mat').hide();
+}
+
+function verMaterialesUsados(){
+    $('#mat').show();
+}
+
+function setDetalleVisible(valor) {
+    if (valor) {
+        $('#stock').removeClass('col-md-8');
+        $('#stock').addClass('col-md-4');
+        $('#mat').show();
+    } else {
+        $('#stock').removeClass('col-md-4');
+        $('#stock').addClass('col-md-8');
+        $('#mat').hide();
+    }
+}
