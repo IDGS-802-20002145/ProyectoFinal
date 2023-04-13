@@ -121,6 +121,7 @@ class Compra(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     proveedor_id = db.Column(db.Integer, db.ForeignKey('Proveedor.id'), nullable=False)
     fecha = db.Column(db.Date, nullable=False)
+    estatus = db.Column(db.Boolean, default=True)
     DetCompra = db.relationship('DetCompra', backref='Compra', lazy=True, overlaps="Compra")
 
 class DetCompra(db.Model):

@@ -67,6 +67,13 @@
           </li>
           {% endif %}
 
+    
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('administrador.getAllUsers') }}">Gestión Usuarios</a>
+          </li>
+          {% endif %}
+
           {% if not current_user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>

@@ -53,23 +53,13 @@ def admin_post():
         print (cantidad_usada)
         cantidades_individuales = cantidad_usada
         print (cantidades_individuales)
-        
+        inventarioM=InventarioMateriaPrima.query.all()
+        print (inventarioM)
         # Validar que se haya escogido al menos un material
         if not materiales or not cantidad_usada:
             flash("Debe escoger al menos un material para crear el producto.", "error")
             return redirect(url_for('main.principalAd'))
         
-        # Crear una instancia del objeto Producto con los datos recibidos
-        nuevo_producto = Producto(nombre=nombre, descripcion=descripcion, talla=talla, color=color, modelo=modelo,
-                                        precio=precio, imagen=img, stock_existencia=stock_existencia)
-        # Agregar el nuevo producto a la sesión de la base de datos
-        db.session.add(nuevo_producto)
-        
-
-        # Obtener el objeto Producto creado en la sesión de la base de datos
-        producto = db.session.query(Producto).order_by(Producto.id.desc()).first()
-        print(f"Producto: {producto.id}")
-
         # Actualizar el inventario de los materiales utilizados en la creación del producto
         cantidad_utilizada_por_material = {}
         for material_id, cantidad_utilizada, cantidadesIndi in zip(materiales, cantidad_usada, cantidades_individuales):
@@ -89,15 +79,38 @@ def admin_post():
                 if material.cantidad < cantidad_utilizada:
                     flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
                     return redirect(url_for('main.principalAd'))
-                if cantidad_utilizada < 0:
-                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
-                    return redirect(url_for('main.principalAd'))
+                
                 if cantidadesIndi < 0:
                     flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
                     return redirect(url_for('main.principalAd'))
                 print(materiales)
 
                 cantidad_utilizada_total = cantidad_utilizada * float(stock_existencia)
+                
+                if cantidad_utilizada_total > material.cantidad:
+                    flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
+                    return redirect(url_for('main.principalAd'))
+                
+                if cantidad_utilizada_total < 0:
+                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
+                    return redirect(url_for('main.principalAd'))
+                
+                #crea una validacion para que no se pueda crear un producto cuando el material se encuentre en su minimo
+                if material.cantidad <= material.stock_minimo:
+                    flash(f"No se puede crear el producto porque el material {material.nombre} se encuentra en su minimo.", "error")
+                    return redirect(url_for('main.principalAd'))
+            
+                # Crear una instancia del objeto Producto con los datos recibidos
+                nuevo_producto = Producto(nombre=nombre, descripcion=descripcion, talla=talla, color=color, modelo=modelo,
+                                        precio=precio, imagen=img, stock_existencia=stock_existencia)
+                # Agregar el nuevo producto a la sesión de la base de datos
+                db.session.add(nuevo_producto)
+        
+                # Obtener el objeto Producto creado en la sesión de la base de datos
+                producto = db.session.query(Producto).order_by(Producto.id.desc()).first()
+                print(f"Producto: {producto.id}")
+
+                
                 explotacion_material = ExplotacionMaterial(producto_id=producto.id, material_id=material.id, cantidad_usada=cantidad_utilizada_total, cantidadIndividual=cantidadesIndi)
                 db.session.add(explotacion_material)
                 db.session.commit()  # guardar cambios aquí
@@ -108,8 +121,8 @@ def admin_post():
                 # Mensaje de depuración
                 print(f"Producto: {producto.id}, Material: {material_id}, Cantidad utilizada: {cantidad_utilizada_total}")
 
-        # Guardar los cambios en la sesión de la base de datos
-        db.session.commit()
+            # Guardar los cambios en la sesión de la base de datos
+            db.session.commit()
 
         #Redirigir al administrador a la página principal del panel de control
         flash("El producto ha sido agregado exitosamente.", "success")
@@ -179,6 +192,95 @@ def modificar():
         return render_template('modificar.html', producto=producto, id=id, 
                             materiales=materiales, explotacion=explotacion, 
                             cantidades=cantidades)
+
+
+@administrador.route('/actualizarStock', methods=['GET', 'POST'])
+@login_required
+def actualizarStock():
+    id = request.args.get('id')
+    producto = Producto.query.get(id)
+    materialesU = request.form.getlist('materiales')
+    cantidad_usada = list(filter(bool, request.form.getlist('cantidad_usada[]')))
+    cantidades_individuales = cantidad_usada
+    print (cantidad_usada)
+    
+    if producto is None:
+        flash("El producto no existe", "error")
+        return redirect(url_for('main.admin'))
+    
+    if request.method == 'POST':
+        nuevo_stock = request.form.get('cantidad')
+        stock_anterior = producto.stock_existencia
+        print ("este es el stock anterior----------------------------", stock_anterior)
+        # Actualizar el inventario de los materiales utilizados en la creación del producto
+        cantidad_utilizada_por_material = {}
+        for material_id, cantidad_utilizada, cantidadesIndi in zip(materialesU, cantidad_usada, cantidades_individuales):
+            if cantidad_utilizada:
+                cantidad_utilizada_por_material[int(material_id)] = (float(cantidad_utilizada), float(cantidadesIndi))
+                print(f"Material: {material_id}, Cantidad utilizada: {cantidad_utilizada}, Cantidad individual: {cantidadesIndi}")
+
+        for material_id, (cantidad_utilizada, cantidadesIndi) in cantidad_utilizada_por_material.items():
+            materiales = InventarioMateriaPrima.query.filter_by(id=material_id).all()
+            if not materiales:
+                flash("No existe el material en el inventario.", "error")
+                return redirect(url_for('main.principalAd'))
+            for material in materiales:
+                if material is None:
+                    flash(f"No se encontró el material con la identificación {material_id}.", "error")
+                    return redirect(url_for('main.principalAd'))
+                if material.cantidad < cantidad_utilizada:
+                    flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
+                    return redirect(url_for('main.principalAd'))
+                
+                if cantidadesIndi < 0:
+                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
+                    return redirect(url_for('main.principalAd'))
+                print("estos son los materiales", materiales)
+
+                cantidad_utilizada_total = cantidad_utilizada * float(nuevo_stock)
+                
+                if cantidad_utilizada_total > material.cantidad:
+                    flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
+                    return redirect(url_for('main.principalAd'))
+                
+                if cantidad_utilizada_total < 0:
+                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
+                    return redirect(url_for('main.principalAd'))
+                
+                #crea una validacion para que no se pueda crear un producto cuando el material se encuentre en su minimo
+                if material.cantidad <= material.stock_minimo:
+                    flash(f"No se puede crear el producto porque el material {material.nombre} se encuentra en su minimo.", "error")
+                    return redirect(url_for('main.principalAd'))
+                
+                explotacion_material = ExplotacionMaterial(producto_id=producto.id, material_id=material.id, cantidad_usada=cantidad_utilizada_total, cantidadIndividual=cantidadesIndi)
+                db.session.add(explotacion_material)
+
+                material.cantidad -= cantidad_utilizada_total
+                db.session.add(material)
+        # Actualizar el stock del producto
+        print("este es el stock anterior" + str(stock_anterior))	
+        print("este es el nuevo stock" + str(nuevo_stock))
+        producto.stock_existencia += int(nuevo_stock)
+        print("esta es la suma" + str(producto.stock_existencia))
+        db.session.add(producto)
+
+        # Guardar los cambios en la sesión de la base de datos
+        db.session.commit()
+        flash("El stock se actualizó con éxito", "success")
+        return redirect(url_for('main.principalAd'))
+    
+    elif request.method == 'GET':
+        materiales = InventarioMateriaPrima.query.all()
+        explotacion = ExplotacionMaterial.query.filter_by(producto_id=producto.id).all()
+        cantidades = {exp.material_id: exp.cantidadIndividual for exp in explotacion}
+
+    return render_template('actualizarStock.html', producto=producto, id=id, 
+                            materiales=materiales, explotacion=explotacion, 
+                            cantidades=cantidades)
+
+
+
+
 
 @administrador.route('/eliminar', methods=['GET', 'POST'])
 @login_required
@@ -261,22 +363,62 @@ def compras():
 def catalogoCompras():
 
     fecha = request.form.get('fecha')
+    fechaR= request.form.get('fechaR')
+    conteoComprasR=0
+    conteoComprasP=0
 
     if fecha:
         compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
                     .join(DetCompra, Compra.id == DetCompra.compra_id)\
                     .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
                     .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
-                    .filter(Compra.fecha == fecha)\
+                    .filter(Compra.fecha == fecha and Compra.estatus==0)\
                     .all()
     else:
         compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
                     .join(DetCompra, Compra.id == DetCompra.compra_id)\
                     .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
                     .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
+                    .filter(Compra.estatus==0)\
                     .all()
+        conteoComprasR= Compra.query.filter_by(estatus=1).count()
+    
+                    
+    if fechaR:
+        comprasRealizadas = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
+                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
+                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
+                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
+                    .filter(Compra.fecha == fechaR and Compra.estatus==1)\
+                    .all()
+    else:
+        comprasRealizadas = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
+                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
+                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
+                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
+                    .filter(Compra.estatus==1)\
+                    .all()
+        conteoComprasP= Compra.query.filter_by(estatus=0).count()
+    
+    if request.method == 'POST' and 'confirmar' in request.form:
+        idCompra = request.form.get('idCompra')
+        idMaterial = request.form.get('idMaterial')
+        cantidad = request.form.get('cantidad')
+    
+        material= InventarioMateriaPrima.query.get(idMaterial)
+        compra = Compra.query.get(idCompra)
+        compra.estatus = 1
+        db.session.add(compra)
+        # Aumentar la cantidad de material en el inventario correspondiente
+        material.cantidad += int(cantidad)
+        db.session.add(material)
+        db.session.commit()
+        flash("Compra realizada con exito", "success")
+        return redirect(url_for('administrador.inventarios', id=idCompra, idM=idMaterial, cant=cantidad))
+    return render_template('catalogoCompras.html', compras=compras,
+                        comprasRealizadas=comprasRealizadas,conteoComprasR=conteoComprasR,
+                        conteoComprasP=conteoComprasP)
 
-    return render_template('catalogoCompras.html', compras=compras)
 
 
 
@@ -373,3 +515,158 @@ def eliminar_prov():
     
 ##################################################################
 
+
+
+################################### Gestion de Usuarios #############################
+
+
+
+@administrador.route('/getAllUsers',methods=["GET","POST"])
+@login_required
+def getAllUsers():
+    users = User.query.all()
+
+    if len(users) == 0:
+        users = 0
+    return render_template('users.html', users=users)
+
+@administrador.route('/addUser', methods=['GET','POST'])
+@login_required
+def addUser():   
+    if request.method == 'POST':
+        
+        email=request.form.get('txtEmailUser')
+        name=request.form.get('txtNombreUser')
+        password=request.form.get('txtContrasenaUser')
+        
+        #consultamos si existe un usuario ya registrado con ese email.
+        user=User.query.filter_by(email=email).first()
+        
+        if user:
+           # logger.info('Registro denagado, el correo: '+ email +' ya fue registrado anteriormente' + ' '+ fecha_actual)
+            flash('Ese correo ya esta en uso')
+            return redirect(url_for('auth.register'))
+        
+        #Creamos un nuevo usuario y lo guardamos en la bd.
+        #new_user=User(email=email,name=name,password=generate_password_hash(password,method='sha256'))
+        
+        userDataStore.create_user(name=name,email=email,password=generate_password_hash(password,method='sha256'))
+        
+        db.session.commit()
+        #logger.info('Usuario(cliente) registrado: '+ email + ' el dia '+ fecha_actual)
+        
+        if request.form.get('rolUser') == 'cliente':
+            try:
+                
+                print(email)
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('agregarCliente', [email])  
+
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('administrador.getAllUsers'))
+                    
+            except Exception as ex:
+                        print(ex)
+        else:
+            try:
+                print(email)
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('agregarEmpleado', [email])  
+
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('administrador.getAllUsers'))
+                    
+            except Exception as ex:
+                        print(ex)
+    else:
+        return render_template('agregarUser.html')
+    
+@administrador.route('/updateUser', methods=['GET','POST'])
+@login_required
+def updateUser():
+    id = request.args.get('id')
+    user = User.query.get(id)        
+    
+    if request.method == 'POST':   
+        user.name = request.form.get('txtNombreUser')
+        user.email = request.form.get('txtEmailUser')
+        user.password = request.form.get('txtContrasenaUser')
+        
+        nCont = request.form.get('txtNuevaCont')
+        if nCont != '':
+            user.password = generate_password_hash(request.form.get('txtNuevaCont'),method='sha256')                      
+    
+        if request.form.get('rolUser') == '0':
+            user.empleado = False
+        else:
+            user.empleado = True
+            
+        db.session.commit()
+        
+        if user.empleado:
+            try:  
+                print("Se intenta cambiar a empleado")   
+                print(user.id)               
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('cambiarAEmp', [int(user.id)])  
+                
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('administrador.getAllUsers'))
+                        
+            except Exception as ex:
+                print(ex)
+        else:
+            try:
+                print(user.id)
+                print("Se intenta cambiar a cliente")                   
+                connection = db.engine.raw_connection()
+                cursor = connection.cursor()
+                cursor.callproc('cambiarACli', [int(user.id)])  
+                 
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return redirect(url_for('administrador.getAllUsers'))
+                        
+            except Exception as ex:
+                print(ex)
+        return redirect(url_for('administrador.getAllUsers'))
+    
+    return render_template('modificarUser.html', user = user)
+
+@administrador.route('/deleteUser', methods=['GET','POST'])
+@login_required 
+def deleteUser():
+    id = request.args.get('id')
+    user = User.query.get(id)        
+    
+    if request.method == 'POST':   
+        user.active = False            
+        db.session.commit()
+        return redirect(url_for('administrador.getAllUsers'))
+        
+        
+    return render_template('eliminarUser.html', user = user)
+
+@administrador.route('/findUser', methods=['GET','POST'])
+@login_required
+def findUser():
+    if request.method == 'POST':   
+        search_term = request.form.get('search')
+        users = User.query.filter(or_(User.name.ilike(f'%{search_term}%'),
+                                      User.email.ilike(f'%{search_term}%'))).all()
+        if not users:
+            flash("El usuario no existe", "error")
+            return redirect(url_for('main.getAllUsers'))
+        return render_template('users.html', users=users)
+    else:
+        return redirect(url_for('administrador.getAllUsers'))

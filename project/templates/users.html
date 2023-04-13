@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/users.css') }}">
+        <h2 style="color:lightcoral" class="text-center">Usuarios</h2>
+        <a href="/addUser" class="btn btn-primary float-left"><i class="fa-solid fa-file-circle-plus"></i> Agregar 
+        </a>
+        <a href="/getAllUsers" class="btn btn-primary float-right"><i class="fa-solid fa-turn-down-left"></i> Mostrar todos</a>
+        <form method="POST" action="/findUser">
+            <label for="search">Search</label>
+            <input required="" type="search" class="input" id="search" name="search">
+            <span class="caret"></span>
+        </form>
+          
+            <table class="table table-striped table-hover table-bordered">
+                <thead style="background-color: gray;">
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Eliminar</th>
+                    <th>Modificar</th>
+                </thead>
+                <tbody>
+                <tr>
+                {% if users is iterable and users is not string%}
+                {%for u in users%}
+                {% if not u.admin and u.active%}
+                    <td>{{u.name}}</td>
+                    <td>{{u.email}}</td>
+                    <td>
+                        {% if u.empleado%}
+                            <p class="text-info">Empleado</p>
+                        {% else %}
+                            <p class="text-success">Cliente</p>
+                        {% endif %}
+                    </td>
+                    <td><a href="deleteUser?id={{u.id}}" class="btn btn-danger" style="width: 60%;">
+                        <i class="fa-solid fa-eraser"></i> Eliminar</a></td>
+                    <td><a href="updateUser?id={{u.id}}" class="btn btn-success" style="width: 60%;">
+                        <i class="fa-regular fa-pen-to-square"></i>Modificar</a></td>    
+                    </tr>   
+                {% endif %}
+                {%endfor%}   
+                {% elif users is not iterable %}
+                {% if not users.admin and users.active%}
+                <td>{{users.name}}</td>
+                <td>{{users.email}}</td>
+                <td>
+                    {% if users.empleado%}
+                        <p class="text-info">Empleado</p>
+                    {% else %}
+                        <p class="text-success">Cliente</p>
+                    {% endif %}
+                </td>
+                <td><a href="deleteUser?id={{users.id}}" class="btn btn-danger" style="width: 60%;">
+                    <i class="fa-solid fa-eraser"></i> Eliminar</a></td>
+                <td><a href="updateUser?id={{users.id}}" class="btn btn-success" style="width: 60%;">
+                    <i class="fa-regular fa-pen-to-square"></i>Modificar</a></td>    
+                </tr>   
+                 {% endif %} 
+                {% endif %}
+                </tbody>
+            </table>
+    </div>
+{% endblock %}
