@@ -121,6 +121,16 @@
                   {% endif %}
                 </label>
               </div>
+              {% else %}
+              Producto : {{producto.nombre}} con la talla :<b>
+              {% if producto.tallas == 'S'%}
+              Chica
+              {% elif producto.tallas == 'M'%}
+              Mediana
+              {% elif producto.tallas == 'G'%}
+              Grande
+              {% endif %}</b>
+              no hay stock disponible<br>
               {% endif %}
             {% endfor %}          
               <button class="btn btn-primary" onclick="verMas('{{modelo}}')">Ver más</button>
