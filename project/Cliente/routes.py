@@ -21,6 +21,7 @@ from ..Cliente.pedidos import descargaPDF
 from project.models import Pedido, Producto, DetPedido, Venta, DetVenta
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
+from sqlalchemy.orm import joinedload
 
 
 cliente = Blueprint('cliente', __name__)
@@ -31,7 +32,30 @@ cliente = Blueprint('cliente', __name__)
 def catalogoC():
     prod = Producto.query.all()
     modelos = db.session.query(Producto.modelo).distinct().all()
-    return render_template('catalogoCliente.html', productos = prod, modelos=modelos)
+    otrosAtributos = db.session.query(Producto.modelo,
+                                      Producto.imagen,
+                                      Producto.nombre,
+                                      Producto.precio,
+                                      Producto.color,
+                                      Producto.descripcion,
+                                      Producto.stock_existencia).group_by(Producto.modelo).all()
+    print(otrosAtributos)
+    productos_por_modelo = {}
+    
+    for modelo in modelos:
+        productos_por_modelo[modelo[0]] = []
+
+    for producto in prod:
+        modelo = producto.modelo
+        productos_por_modelo[modelo].append({
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'descripcion': producto.descripcion,
+            'precio': producto.precio,
+            'tallas': producto.talla
+        })
+
+    return render_template('catalogoCliente.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos)
 
 ###################### Modulo de pedidos ######################
 
@@ -39,7 +63,7 @@ def catalogoC():
 @login_required
 def pedidos():
     
-    ids_pedidos = Pedido.query.with_entities(Pedido.id).filter_by(user_id= current_user.id, estatus=1).all()
+    ids_pedidos = Pedido.query.with_entities(Pedido.id).filter_by(user_id= current_user.id, estatus = 1).all()
     detPed = DetPedido.query.filter(DetPedido.pedido_id.in_([id_pedido[0] for id_pedido in ids_pedidos])).all()
     producto_ids = [dp.producto_id for dp in detPed]
 
@@ -49,13 +73,14 @@ def pedidos():
     if request.method == 'POST':
         #Datos del pedido
         userID = current_user.id
+        cantidad = request.form.get('txtCantCar', " Esta es la cantidad")
         fecha_actual = date.today()
         fecha_actual_str = fecha_actual.strftime('%Y-%m-%d')
         #obten la fecha actual sin la hora
         # 1 Es pedido , 2 es compra y 0 es eliminado
         estatus = 1
         print(userID)
-        pedido = Pedido(user_id = userID,
+        pedido = Pedido(user_id = userID,                        
                         fecha = fecha_actual_str,
                         estatus = estatus)
         db.session.add(pedido)
@@ -67,14 +92,14 @@ def pedidos():
             id_obtenido = consPedido.id
         pedidoID = id_obtenido
         productoID = request.args.get('idProducto')
-        cantidad = 1
+        cantidad = cantidad
                  
         detPed = DetPedido(pedido_id = pedidoID, producto_id = productoID,cantidad = cantidad)
         db.session.add(detPed)
         db.session.commit()
         return redirect(url_for('cliente.catalogoC'))
     
-    return render_template('pedidos.html', detPed=detPed, productos=productos)
+    return render_template('pedidos.html', detPed = detPed, productos = productos)
 
 @cliente.route('/eliminarPedido',methods=["GET","POST"])
 @login_required
@@ -92,6 +117,7 @@ def eliminarPedido():
     return render_template('eliminarPedido.html', detPed = detPed)
 
 #arreglar buscar pedido
+
 @cliente.route('/buscarPedido',methods=["GET","POST"])
 @login_required
 def buscarPedido():
@@ -104,7 +130,7 @@ def buscarPedido():
         if not detPed:
             flash("El pedido no existe", "error")
             return redirect(url_for('cliente.pedidos'))
-        return render_template('/pedidos.html', detPed = detPedR)
+        return render_template('./pedidos/pedidos.html', detPed = detPedR)
     
     return render_template('pedidos.html', detPed = detPed)
 
