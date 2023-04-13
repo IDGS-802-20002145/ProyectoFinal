@@ -20,6 +20,10 @@ from project.models import Pedido, Producto, DetPedido, Venta, DetVenta
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
 
-def redireccionamiento():
-    print(1)
-    return redirect(url_for('cliente.pedidos'))
+def descargaPDF(output):    
+    response = make_response(output.getvalue())
+    response.headers.set('Content-Disposition', 'attachment', filename=f'ticket{datetime.now().date()}.pdf')
+    response.headers.set('Content-Type', 'application/pdf')
+    flash("El pedido se ha pagado con éxito", "success")
+                        
+    return response

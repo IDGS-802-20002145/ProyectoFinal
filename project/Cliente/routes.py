@@ -5,6 +5,7 @@ from reportlab.pdfgen import canvas
 from flask import make_response, send_file
 from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app
 from flask_security import login_required, current_user
+from sqlalchemy import and_
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -16,7 +17,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from flask_security.decorators import roles_required, roles_accepted
 from ..models import db
-from ..Cliente.pedidos import redireccionamiento
+from ..Cliente.pedidos import descargaPDF
 from project.models import Pedido, Producto, DetPedido, Venta, DetVenta
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
@@ -89,6 +90,7 @@ def eliminarPedido():
         return redirect(url_for('cliente.pedidos'))
     
     return render_template('eliminarPedido.html', detPed = detPed)
+
 #arreglar buscar pedido
 @cliente.route('/buscarPedido',methods=["GET","POST"])
 @login_required
@@ -119,20 +121,40 @@ def buscarPedido():
 @login_required
 def pagar():
     if request.method == 'GET':
-        id = request.args.get('id')
-        pedido = Pedido.query.filter_by(id=id, estatus=1).first()
-        productos = DetPedido.query.filter_by(pedido_id=id).all()        
-        detProductos = []
+        id = request.args.get('id')   
+        print(id, " Es el id del pedido")     
+        pedido = Pedido.query.filter_by(id=id, estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+        detProductos = {}
         total = 0
-        for producto in productos:
-            prod = Producto.query.filter_by(id=producto.producto_id).first()
-            total += prod.precio * producto.cantidad
-            prod.cantidad = producto.cantidad
-            detProductos.append(prod)
+        productos_sin_existencias_nombres = []
+
+        for pedido in pedido:
+            productos = DetPedido.query.filter_by(pedido_id=pedido.id).all()
+            for producto in productos:
+                prod = Producto.query.filter_by(id=producto.producto_id).first()
+                if producto.cantidad > prod.stock_existencia:
+                    productos_sin_existencias_nombres.append(prod.nombre)
+                else:
+                    if prod.id in detProductos:
+                        detProductos[prod.id]['cantidad'] += producto.cantidad
+                    else:
+                        detProductos[prod.id] = {
+                            'id': prod.id,
+                            'nombre': prod.nombre,
+                            'precio': prod.precio,
+                            'cantidad': producto.cantidad,
+                            'imagen': prod.imagen   
+                        }
+                    total += prod.precio * producto.cantidad
+
+        if productos_sin_existencias_nombres:
+            productos_sin_existencias_nombres = list(set(productos_sin_existencias_nombres))
+            flash(f"No hay suficiente stock para los productos: {productos_sin_existencias_nombres}", "danger")
+
+        detProductos = list(detProductos.values())
 
     if request.method == 'POST':
-        id = request.form.get('id')
-        pedido = Pedido.query.filter_by(id=id, estatus=1).first()
+
         if request.form['metodo_pago'] == 'efectivo':
             id = request.form.get('id')
             print(id, " Es el id del pedido")
@@ -207,17 +229,21 @@ def pagar():
             
             #Descargar archivo PDF
             output.seek(0)
+            
+            # descargaPDF(output)
             response = make_response(output.getvalue())
             response.headers.set('Content-Disposition', 'attachment', filename=f'ticket{datetime.now().date()}.pdf')
             response.headers.set('Content-Type', 'application/pdf')
             flash("El pedido se ha pagado con éxito", "success")
-                        
+        
+
             return response
                    
         elif request.form['metodo_pago'] == 'tarjeta':
             id = request.form.get('id')
             return render_template('pago_tarjeta.html', id=id)
-    return render_template('pagar.html', pedido=pedido, productos=productos, detProductos=detProductos, total=total, id=id)
+    print(detProductos, " Es el detalle de productos")
+    return render_template('pagar.html', pedido=pedido, detProductos=detProductos, total=total, id=id)
    
 
 
@@ -310,120 +336,253 @@ def pago_tarjeta():
 
 
 
-@cliente.route('/pagarTodo', methods=['GET', 'POST'])
+@cliente.route('/pagar_todo', methods=['GET', 'POST'])
 @login_required
-def pagarTodo():    
-    if request.method == 'GET':
-       pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).filter(DetPedido.cantidad <= DetPedido.producto.stock_existencia).all()
-       detProductos = []
-       total = 0
-       for pedido in pedidos_disponibles:
-           productos = DetPedido.query.filter_by(pedido_id=pedido.id).all()
-           for producto in productos:
-               prod = Producto.query.filter_by(id=producto.producto_id).first()
-               total += prod.precio * producto.cantidad
-               prod.cantidad = producto.cantidad
-               detProductos.append(prod)
-    #     id = request.args.get('id')
-    #     pedido = Pedido.query.filter_by(id=id, estatus=1).first()
-    #     productos = DetPedido.query.filter_by(pedido_id=id).all()        
-    #     detProductos = []
-    #     total = 0
-    #     for producto in productos:
-    #         prod = Producto.query.filter_by(id=producto.producto_id).first()
-    #         total += prod.precio * producto.cantidad
-    #         prod.cantidad = producto.cantidad
-    #         detProductos.append(prod)
+def pagarTodo():   
+   pedidos_disponibles = "" 
+   if request.method == 'GET':
+      pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+      detProductos = {}
+      total = 0
+      productos_sin_existencias_nombres = []
 
-    # if request.method == 'POST':
-    #     id = request.form.get('id')
-    #     pedido = Pedido.query.filter_by(id=id, estatus=1).first()
-    #     if request.form['metodo_pago'] == 'efectivo':
-    #         id = request.form.get('id')
-    #         print(id, " Es el id del pedido")
-    #         pedido = Pedido.query.filter_by(id=id).first()
-    #         print(pedido, " Es el pedido")
-    #         # Cambiar estatus del pedido a 2
-    #         pedido.estatus = 2
-    #         db.session.commit()
-            
-    #         # Insertar en tabla venta
-    #         venta = Venta(user_id=current_user.id, fecha=datetime.now().date())
-    #         db.session.add(venta)
-    #         db.session.commit()
-            
-    #         productos = DetPedido.query.filter_by(pedido_id=id).all()
-    #         # Insertar detalle en tabla detventa
-    #         for producto in productos:
-    #             prod = Producto.query.filter_by(id=producto.producto_id).first()
-    #             detventa = DetVenta(venta_id=venta.id, producto_id=prod.id, cantidad=producto.cantidad, precio=prod.precio)
-    #             db.session.add(detventa)
-    #             prod.stock_existencia -= producto.cantidad
-    #             db.session.commit()
-            
-    #          # Generar archivo PDF
-    #         output = io.BytesIO()
-    #         doc = SimpleDocTemplate(output, pagesize=letter)
-    #         styles = getSampleStyleSheet()
-    #         Story = []
-    #         # Agregar encabezado
-    #         #im = Image("../static/img/logo_size_invert.jpg", width=150, height=150)
-    #         #Story.append(im)
-    #         Story.append(Spacer(1, 12))
-    #         Story.append(Paragraph("Sartorial", styles["Title"]))
-    #         Story.append(Spacer(1, 12))
-    #         Story.append(Paragraph(f"Fecha: {datetime.now().date()}", styles["Normal"]))
-    #         Story.append(Paragraph(f"Cliente: {current_user.name}", styles["Normal"]))
-    #         Story.append(Spacer(1, 12))
-    #         # Agregar detalles del pedido
-    #         detProductos = []
-    #         totalFac = 0
-    #         for producto in productos:
-    #             prod = Producto.query.filter_by(id=producto.producto_id).first()
-    #             totalFac += prod.precio * producto.cantidad
-    #             prod.cantidad = producto.cantidad
-    #             detProductos.append([prod.nombre, f"${prod.precio}", f"{producto.cantidad}"])
-    #         tableStyle = [('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-    #                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-    #                     ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-    #                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-    #                     ('FONTSIZE', (0, 0), (-1, 0), 14),
-    #                     ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-    #                     ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-    #                     ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-    #                     ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
-    #                     ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-    #                     ('FONTSIZE', (0, 1), (-1, -1), 12),
-    #                     ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
-    #                     ('BACKGROUND', (0, -1), (-1, -1), colors.grey),
-    #                     ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
-    #                     ('ALIGN', (0, -1), (-1, -1), 'CENTER'),
-    #                     ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-    #                     ('FONTSIZE', (0, -1), (-1, -1), 14),
-    #                     ('TOPPADDING', (0, -1), (-1, -1),12)]
-    #         t = Table([["Producto", "Precio", "Cantidad"]] + detProductos)
-    #         t.setStyle(tableStyle)
-    #         Story.append(t)
-    #         Story.append(Spacer(1, 12))
-    #         #Agregar total a pagar
+      for pedido in pedidos_disponibles:
+            productos = DetPedido.query.filter_by(pedido_id=pedido.id).all()
+            for producto in productos:
+                prod = Producto.query.filter_by(id=producto.producto_id).first()
+                if producto.cantidad > prod.stock_existencia:
+                    productos_sin_existencias_nombres.append(prod.nombre)
+                else:
+                    if prod.id in detProductos:
+                        detProductos[prod.id]['cantidad'] += producto.cantidad
+                    else:
+                        detProductos[prod.id] = {
+                            'id': prod.id,
+                            'nombre': prod.nombre,
+                            'precio': prod.precio,
+                            'cantidad': producto.cantidad,
+                            'imagen': prod.imagen   
+                        }
+                    total += prod.precio * producto.cantidad
 
-    #         Story.append(Paragraph(f"Total a pagar: ${totalFac}", styles["Normal"]))
-    #         doc.build(Story)
-            
-    #         #Descargar archivo PDF
-    #         output.seek(0)
-    #         response = make_response(output.getvalue())
-    #         response.headers.set('Content-Disposition', 'attachment', filename=f'ticket{datetime.now().date()}.pdf')
-    #         response.headers.set('Content-Type', 'application/pdf')
-    #         flash("El pedido se ha pagado con éxito", "success")
-                        
-    #         return response
-                   
-    #     elif request.form['metodo_pago'] == 'tarjeta':
-    #         id = request.form.get('id')
-    #         return render_template('pago_tarjeta.html', id=id)
-    return render_template('pagar.html', detProductos=detProductos, pedidos=pedidos_disponibles, total=total)
+      if productos_sin_existencias_nombres:
+            productos_sin_existencias_nombres = list(set(productos_sin_existencias_nombres))
+            flash(f"No hay suficiente stock para los productos: {productos_sin_existencias_nombres}", "danger")
 
+      detProductos = list(detProductos.values())
+       
+
+
+   if request.method == 'POST':
+      if request.form['metodo_pago'] == 'efectivo':
+                pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+
+                
+                for pedido in pedidos_disponibles:
+                    pedido.estatus = 2
+
+                venta = Venta(user_id=current_user.id, fecha=datetime.now().date())
+                db.session.add(venta)
+
+                detPedidos = DetPedido.query.filter(DetPedido.pedido_id.in_([pedido.id for pedido in pedidos_disponibles])).all()
+
+                for detalle_pedido in detPedidos:
+                    producto = detalle_pedido.producto
+                    producto.stock_existencia -= detalle_pedido.cantidad
+                    detventa = DetVenta(venta_id=venta.id, producto_id=producto.id, cantidad=detalle_pedido.cantidad, precio=producto.precio)
+                    db.session.add(detventa)
+
+                db.session.commit()
+
+
+                # Generar archivo PDF
+                output = io.BytesIO()
+                doc = SimpleDocTemplate(output, pagesize=letter)
+                styles = getSampleStyleSheet()
+                Story = []
+                # Agregar encabezado
+                #im = Image("../static/img/logo_size_invert.jpg", width=150, height=150)
+                #Story.append(im)
+                Story.append(Spacer(1, 12))
+                Story.append(Paragraph("Sartorial", styles["Title"]))
+                Story.append(Spacer(1, 12))
+                Story.append(Paragraph(f"Fecha: {datetime.now().date()}", styles["Normal"]))
+                Story.append(Paragraph(f"Cliente: {current_user.name}", styles["Normal"]))
+                Story.append(Paragraph(f"Referencia #1234567890", styles["Normal"]))
+                Story.append(Paragraph(f"Cuenta Bancaria: 8675309012345", styles["Normal"]))
+                Story.append(Paragraph(f"Titular de la cuenta: Sartorial", styles["Normal"]))             
+                Story.append(Spacer(1, 12))
+                # Agregar detalles del pedido
+                # detProductosPOST = []
+                # totalFac = 0
+                # for detalle_pedido in detPedidos:
+                #     producto = detalle_pedido.producto
+                #     prod = Producto.query.filter_by(id=producto.id).first()
+                #     totalFac += prod.precio * detalle_pedido.cantidad
+                #     prod.cantidad = detalle_pedido.cantidad
+                #     detProductosPOST.append([prod.nombre, f"${prod.precio}", f"{detalle_pedido.cantidad}"])   
+                detProductosPOST = []
+                totalFac = 0
+                cantidades_por_producto = {}
+
+                for detalle_pedido in detPedidos:
+                    producto = detalle_pedido.producto
+                    prod = Producto.query.filter_by(id=producto.id).first()
+                    if detalle_pedido.cantidad <= prod.stock_existencia:
+                        totalFac += prod.precio * detalle_pedido.cantidad
+                        if producto.id in cantidades_por_producto:
+                            cantidades_por_producto[producto.id] += detalle_pedido.cantidad
+                        else:
+                            cantidades_por_producto[producto.id] = detalle_pedido.cantidad
+                    else:
+                        flash(f"No hay suficiente stock para el producto: {prod.nombre}", "danger")
+
+                for producto_id, cantidad in cantidades_por_producto.items():
+                    prod = Producto.query.filter_by(id=producto_id).first()
+                    detProductosPOST.append([prod.nombre, f"${prod.precio}", f"{cantidad}"])   
+
+                tableStyle = [('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('FONTSIZE', (0, 0), (-1, 0), 14),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                                ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                                ('FONTSIZE', (0, 1), (-1, -1), 12),
+                                ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+                                ('BACKGROUND', (0, -1), (-1, -1), colors.grey),
+                                ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
+                                ('ALIGN', (0, -1), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                                ('FONTSIZE', (0, -1), (-1, -1), 14),
+                                ('TOPPADDING', (0, -1), (-1, -1),12)]
+                t = Table([["Producto", "Precio", "Cantidad"]] + detProductosPOST)
+                t.setStyle(tableStyle)
+                Story.append(t)
+                Story.append(Spacer(1, 12))
+                    #Agregar total a pagar
+
+                Story.append(Paragraph(f"Total a pagar: ${totalFac}", styles["Normal"]))
+                doc.build(Story)
+                    
+                    #Descargar archivo PDF
+                output.seek(0)
+                response = make_response(output.getvalue())
+                response.headers.set('Content-Disposition', 'attachment', filename=f'ticket{datetime.now().date()}.pdf')
+                response.headers.set('Content-Type', 'application/pdf')
+                flash("El pedido se ha pagado con éxito", "success")
+                                
+                return response
+      if request.form['metodo_pago'] == 'tarjeta':
+          return render_template('pago_tarjetaT.html')
+   return render_template('pagarTodo.html', detProductos=detProductos, pedidos=pedidos_disponibles, total=total)
+
+
+
+@cliente.route('/pago_tarjetaT', methods=['POST'])
+@login_required
+def pago_tarjetaT():
+    if request.method == 'POST':
+         pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+         for pedido in pedidos_disponibles:
+               pedido.estatus = 2
+
+         venta = Venta(user_id=current_user.id, fecha=datetime.now().date())
+         db.session.add(venta)
+
+         detPedidos = DetPedido.query.filter(DetPedido.pedido_id.in_([pedido.id for pedido in pedidos_disponibles])).all()
+
+         for detalle_pedido in detPedidos:
+            producto = detalle_pedido.producto
+            producto.stock_existencia -= detalle_pedido.cantidad
+            detventa = DetVenta(venta_id=venta.id, producto_id=producto.id, cantidad=detalle_pedido.cantidad, precio=producto.precio)
+            db.session.add(detventa)
+
+         db.session.commit()
+         
+         ultimos4digitos = request.form.get('card-number-3')
+
+                # Generar archivo PDF
+         output = io.BytesIO()
+         doc = SimpleDocTemplate(output, pagesize=letter)
+         styles = getSampleStyleSheet()
+         Story = []
+         # Agregar encabezado
+         #im = Image("../static/img/logo_size_invert.jpg", width=150, height=150)
+         #Story.append(im)
+         Story.append(Spacer(1, 12))
+         Story.append(Paragraph("Sartorial", styles["Title"]))
+         Story.append(Spacer(1, 12))
+         Story.append(Paragraph(f"Fecha: {datetime.now().date()}", styles["Normal"]))
+         Story.append(Paragraph(f"Cliente: {current_user.name}", styles["Normal"]))
+         Story.append(Paragraph(f"Cliente: {current_user.name}", styles["Normal"]))
+         Story.append(Paragraph(f"Tarjeta de Pago: **** **** **** {ultimos4digitos}", styles["Normal"]))            
+         Story.append(Spacer(1, 12))
+                # Agregar detalles del pedido
+                # detProductosPOST = []
+                # totalFac = 0
+                # for detalle_pedido in detPedidos:
+                #     producto = detalle_pedido.producto
+                #     prod = Producto.query.filter_by(id=producto.id).first()
+                #     totalFac += prod.precio * detalle_pedido.cantidad
+                #     prod.cantidad = detalle_pedido.cantidad
+                #     detProductosPOST.append([prod.nombre, f"${prod.precio}", f"{detalle_pedido.cantidad}"])   
+         detProductosPOST = []
+         totalFac = 0
+         cantidades_por_producto = {}
+
+         for detalle_pedido in detPedidos:
+             producto = detalle_pedido.producto
+             prod = Producto.query.filter_by(id=producto.id).first()
+             totalFac += prod.precio * detalle_pedido.cantidad
+             if producto.id in cantidades_por_producto:
+                  cantidades_por_producto[producto.id] += detalle_pedido.cantidad
+             else:
+                  cantidades_por_producto[producto.id] = detalle_pedido.cantidad
+
+         for producto_id, cantidad in cantidades_por_producto.items():
+             prod = Producto.query.filter_by(id=producto_id).first()
+             detProductosPOST.append([prod.nombre, f"${prod.precio}", f"{cantidad}"])
+    
+
+         tableStyle = [('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('FONTSIZE', (0, 0), (-1, 0), 14),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                                ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                                ('FONTSIZE', (0, 1), (-1, -1), 12),
+                                ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+                                ('BACKGROUND', (0, -1), (-1, -1), colors.grey),
+                                ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
+                                ('ALIGN', (0, -1), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                                ('FONTSIZE', (0, -1), (-1, -1), 14),
+                                ('TOPPADDING', (0, -1), (-1, -1),12)]
+         t = Table([["Producto", "Precio", "Cantidad"]] + detProductosPOST)
+         t.setStyle(tableStyle)
+         Story.append(t)
+         Story.append(Spacer(1, 12))
+                    #Agregar total a pagar
+
+         Story.append(Paragraph(f"Total a pagar: ${totalFac}", styles["Normal"]))
+         doc.build(Story)
+                    
+                    #Descargar archivo PDF
+         output.seek(0)
+         response = make_response(output.getvalue())
+         response.headers.set('Content-Disposition', 'attachment', filename=f'ticket{datetime.now().date()}.pdf')
+         response.headers.set('Content-Type', 'application/pdf')
+         flash("El pedido se ha pagado con éxito", "success")
+                                
+         return response
 
 
 

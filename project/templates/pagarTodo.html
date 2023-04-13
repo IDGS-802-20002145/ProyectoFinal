@@ -8,10 +8,10 @@
 {% if messages %}
 {% for category, message in messages %}
 <div class="alert alert-{{ category }}" role="alert">
-    {{ message }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
-        <span aria-hidden="true">&times;</span>
-    </button>
+  {{ message }}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+    <span aria-hidden="true">&times;</span>
+  </button>
 </div>
 {% endfor %}
 {% endif %}
@@ -19,14 +19,12 @@
 
 
 
-{% if detProductos == [] %}
+{% if detProductos ==  []%}
 
 <h1>No hay productos en el carrito</h1>
 <a href="catalogoC">Presiona aquí para seleccionar productos</a>
 
 {% else %}
-
-
 
 <h1>Confirmación de Pago</h1>
 
@@ -43,7 +41,7 @@
 {% endfor %}
 <h3>El total es ${{ total }}</h3>
 
-<form action="/pagar" method="post" >
+<form method="post" action="/pagar_todo">
     <div>
         <label for="metodo_pago">Seleccione método de pago:</label>
         <select id="metodo_pago" name="metodo_pago">
