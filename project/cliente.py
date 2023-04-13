@@ -131,7 +131,8 @@ def catalogoC():
             'nombre': producto.nombre,
             'descripcion': producto.descripcion,
             'precio': producto.precio,
-            'tallas': producto.talla
+            'tallas': producto.talla,
+            'stock_existencia': producto.stock_existencia
         })
 
     return render_template('catalogoCliente.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos)
