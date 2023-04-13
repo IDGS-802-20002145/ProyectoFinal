@@ -350,6 +350,8 @@ def catalogoCompras():
 
     fecha = request.form.get('fecha')
     fechaR= request.form.get('fechaR')
+    conteoComprasR=0
+    conteoComprasP=0
 
     if fecha:
         compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
@@ -365,6 +367,7 @@ def catalogoCompras():
                     .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
                     .filter(Compra.estatus==0)\
                     .all()
+        conteoComprasR= Compra.query.filter_by(estatus=1).count()
     
                     
     if fechaR:
@@ -381,6 +384,7 @@ def catalogoCompras():
                     .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
                     .filter(Compra.estatus==1)\
                     .all()
+        conteoComprasP= Compra.query.filter_by(estatus=0).count()
     
     if request.method == 'POST' and 'confirmar' in request.form:
         idCompra = request.form.get('idCompra')
@@ -397,8 +401,9 @@ def catalogoCompras():
         db.session.commit()
         flash("Compra realizada con exito", "success")
         return redirect(url_for('main.inventarios', id=idCompra, idM=idMaterial, cant=cantidad))
-    
-    return render_template('catalogoCompras.html', compras=compras, comprasRealizadas=comprasRealizadas)
+    return render_template('catalogoCompras.html', compras=compras,
+                        comprasRealizadas=comprasRealizadas,conteoComprasR=conteoComprasR,
+                        conteoComprasP=conteoComprasP)
 
 
 

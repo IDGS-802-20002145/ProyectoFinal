@@ -19,6 +19,13 @@
         <span aria-hidden="true">×</span>
     </button>
 </div>
+{% elif category == 'warning' %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
 {% endif %}
 {% endfor %}
 <script>
@@ -39,13 +46,13 @@
             {% for mat in materiales %}
             {% if mat.cantidad <= mat.stock_minimo %}
             {% set td_style = "bg-danger" %}
-            {% set td_style2 = "fas fa-grimace" %}
+            {% set td_style2 = "fa-solid fa-face-dizzy fa-shake" %}
             {% elif mat.cantidad <= mat.stock_minimo + 40 %}
             {% set td_style = "bg-warning" %}
-            {% set td_style2 = "fas fa-meh" %}
+            {% set td_style2 = "fa-solid fa-face-grimace fa-beat-fade" %}
             {% else %}
             {% set td_style = "bg-success"%}
-            {% set td_style2 = "fas fa-grin-alt" %}
+            {% set td_style2 = "fa-solid fa-face-laugh fa-flip" %}
             
             {% endif %}
             <div class="col-xl-3 col-sm-6 mb-3" id="dashboard" >

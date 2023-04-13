@@ -38,3 +38,18 @@ function setDetalleVisible(valor) {
         $('#mat').hide();
     }
 }
+
+function mostrarComprasR(){
+    $('#comprasR').show();
+    $('#comprasDasboards').hide();
+}
+function mostrarComprasP(){
+    $('#comprasP').show();
+    $('#comprasDasboards').hide();
+}
+
+function regresarCompras(){
+    $('#comprasR').hide();
+    $('#comprasP').hide();
+    $('#comprasDasboards').show();
+}
