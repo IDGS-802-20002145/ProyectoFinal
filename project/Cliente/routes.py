@@ -30,7 +30,8 @@ cliente = Blueprint('cliente', __name__)
 @cliente.route('/catalogoC',methods=["GET","POST"])
 @login_required
 def catalogoC():
-    prod = Producto.query.all()
+
+    prod = Producto.query.filter(Producto.estatus == 1).all()
     modelos = db.session.query(Producto.modelo).distinct().all()
     otrosAtributos = db.session.query(Producto.modelo,
                                       Producto.imagen,
@@ -38,7 +39,8 @@ def catalogoC():
                                       Producto.precio,
                                       Producto.color,
                                       Producto.descripcion,
-                                      Producto.stock_existencia).group_by(Producto.modelo).all()
+                                      Producto.stock_existencia,
+                                      Producto.estatus).group_by(Producto.modelo).all()
     print(otrosAtributos)
     productos_por_modelo = {}
     
@@ -149,7 +151,7 @@ def pagar():
     if request.method == 'GET':
         id = request.args.get('id')   
         print(id, " Es el id del pedido")     
-        pedido = Pedido.query.filter_by(id=id, estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+        pedido = Pedido.query.filter_by(id=id, estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia > DetPedido.cantidad).all()
         detProductos = {}
         total = 0
         productos_sin_existencias_nombres = []
@@ -367,7 +369,7 @@ def pago_tarjeta():
 def pagarTodo():   
    pedidos_disponibles = "" 
    if request.method == 'GET':
-      pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+      pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia > DetPedido.cantidad).all()
       detProductos = {}
       total = 0
       productos_sin_existencias_nombres = []
@@ -401,7 +403,7 @@ def pagarTodo():
 
    if request.method == 'POST':
       if request.form['metodo_pago'] == 'efectivo':
-                pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+                pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia > DetPedido.cantidad).all()
 
                 
                 for pedido in pedidos_disponibles:
@@ -512,7 +514,7 @@ def pagarTodo():
 @login_required
 def pago_tarjetaT():
     if request.method == 'POST':
-         pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia >= DetPedido.cantidad).all()
+         pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia > DetPedido.cantidad).all()
          for pedido in pedidos_disponibles:
                pedido.estatus = 2
 
