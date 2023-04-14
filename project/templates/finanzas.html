@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+{% if category == 'error' %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{% elif category == 'success' %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{% elif category == 'warning' %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{% endif %}
+{% endfor %}
+
+
+
+<h1>Reportes financieros</h1>
+<h2>Utilidades totales por año</h2>
+<img src="{{ url_for('administrador.finanzas') }}" alt="Utilidades totales por año">
+<h2>Ventas y compras por año</h2>
+<img src="{{ url_for('administrador.finanzas') }}" alt="Ventas y compras por año">
+<h2>Generar reporte en Excel</h2>
+<form action="{{ url_for('administrador.gen_excel') }}" method="get">
+    <label for="anio">Año:</label>
+    <input type="number" id="anio" name="anio" required>
+    <label for="mes">Mes:</label>
+    <input type="number" id="mes" name="mes" required>
+    <button type="submit">Generar reporte en Excel</button>
+</form>
+<h2>Generar reporte en PDF</h2>
+<form action="{{ url_for('administrador.gen_pdf') }}" method="get">
+    <label for="anio">Año:</label>
+    <input type="number" id="anio" name="anio" required>
+    <label for="mes">Mes:</label>
+    <input type="number" id="mes" name="mes" required>
+    <button type="submit">Generar reporte en PDF</button>
+</form>
+
+{% endblock %}
