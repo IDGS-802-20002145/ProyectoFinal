@@ -108,7 +108,7 @@
               {% for producto in productos %}
               
               {% if producto.stock_existencia > 1%}            
-              Cantidad disponible : {{ producto.stock_existencia }}
+              Cantidad disponible : {{ producto.stock_existencia | int}}
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="tallaProducto" id="{{ producto.id }}" value="{{ producto.id }}">
                 <label class="form-check-label" for="{{ producto.id }}">

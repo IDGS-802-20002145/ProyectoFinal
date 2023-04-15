@@ -53,7 +53,7 @@ class Producto(db.Model):
     modelo = db.Column(db.String(50), nullable=False)
     precio = db.Column(db.Float, nullable=False)
     imagen = db.Column(db.String(250), nullable=False)
-    stock_existencia = db.Column(db.Float, nullable=False)
+    stock_existencia = db.Column(db.Integer, nullable=False)
     estatus = db.Column(db.Boolean, default=True)
     det_pedido = db.relationship('DetPedido', backref='producto_detalle', lazy=True, overlaps="producto_detalle")
     explotacion_material = db.relationship('ExplotacionMaterial', backref='producto_explosion', lazy=True, overlaps="producto_explosion")

@@ -110,14 +110,17 @@ def catalogoC():
 
     prod = Producto.query.filter(Producto.estatus == 1).all()
     modelos = db.session.query(Producto.modelo).distinct().all()
-    otrosAtributos = db.session.query(Producto.modelo,
-                                      Producto.imagen,
-                                      Producto.nombre,
-                                      Producto.precio,
-                                      Producto.color,
-                                      Producto.descripcion,
-                                      Producto.stock_existencia,
-                                      Producto.estatus).group_by(Producto.modelo).all()
+    otrosAtributos = db.session.query(
+        Producto.modelo,
+        func.max(Producto.imagen).label('imagen'),  # Utiliza func.max() para obtener la imagen
+        func.max(Producto.nombre).label('nombre'),  # Utiliza func.max() para obtener el nombre
+        func.max(Producto.precio).label('precio'),  # Utiliza func.max() para obtener el precio
+        func.max(Producto.color).label('color'),  # Utiliza func.max() para obtener el color
+        func.max(Producto.descripcion).label('descripcion'),  # Utiliza func.max() para obtener la descripción
+        func.max(Producto.stock_existencia).label('stock_existencia'),  # Utiliza func.max() para obtener el stock_existencia
+        func.max(Producto.estatus).label('estatus')  # Utiliza func.max() para obtener el estatus
+    ).group_by(Producto.modelo).all()
+    
     print(otrosAtributos)
     productos_por_modelo = {}
     

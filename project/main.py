@@ -316,9 +316,6 @@ def addUser():
             flash('Ese correo ya esta en uso')
             return redirect(url_for('auth.register'))
         
-        #Creamos un nuevo usuario y lo guardamos en la bd.
-        #new_user=User(email=email,name=name,password=generate_password_hash(password,method='sha256'))
-        
         userDataStore.create_user(name=name,email=email,password=generate_password_hash(password,method='sha256'))
         
         db.session.commit()
