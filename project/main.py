@@ -81,42 +81,49 @@ def administrador():
                 return redirect(url_for('main.principalAd'))
             for material in materiales:
                 if material is None:
+                    db.session.rollback()
                     flash(f"No se encontró el material con la identificación {material_id}.", "error")
                     return redirect(url_for('main.principalAd'))
                 if material.cantidad < cantidad_utilizada:
+                    db.session.rollback()
                     flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
                     return redirect(url_for('main.principalAd'))
                 
                 if cantidadesIndi < 0:
+                    db.session.rollback()
                     flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
                     return redirect(url_for('main.principalAd'))
                 print(materiales)
-
-                cantidad_utilizada_total = cantidad_utilizada * float(stock_existencia)
+            
+        # Crear una instancia del objeto Producto con los datos recibidos
+        nuevo_producto = Producto(nombre=nombre, descripcion=descripcion, talla=talla, color=color, modelo=modelo,
+                                        precio=precio, imagen=img, stock_existencia=stock_existencia)
+        # Agregar el nuevo producto a la sesión de la base de datos
+        db.session.add(nuevo_producto)
+        
+        # Obtener el objeto Producto creado en la sesión de la base de datos
+        producto = db.session.query(Producto).order_by(Producto.id.desc()).first()
+        print(f"Producto: {producto.id}")    
+        for material_id, (cantidad_utilizada, cantidadesIndi) in cantidad_utilizada_por_material.items():
+            materiales = InventarioMateriaPrima.query.filter_by(id=material_id).all()
+            for material in materiales:
+                #crea una validacion para que no se pueda crear un producto cuando el material se encuentre en su minimo
+                if material.cantidad <= material.stock_minimo:
+                    flash(f"No se puede crear el producto porque el material {material.nombre} se encuentra en su minimo.", "error")
+                    db.session.rollback()
+                    return redirect(url_for('main.principalAd'))
                 
+                cantidad_utilizada_total = cantidad_utilizada * float(stock_existencia)
+                print ("Esta es la cantidad total utilizada -----------------"+str(cantidad_utilizada_total))
                 if cantidad_utilizada_total > material.cantidad:
+                    db.session.rollback()
                     flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
                     return redirect(url_for('main.principalAd'))
                 
                 if cantidad_utilizada_total < 0:
+                    db.session.rollback()
                     flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
                     return redirect(url_for('main.principalAd'))
-                
-                #crea una validacion para que no se pueda crear un producto cuando el material se encuentre en su minimo
-                if material.cantidad <= material.stock_minimo:
-                    flash(f"No se puede crear el producto porque el material {material.nombre} se encuentra en su minimo.", "error")
-                    return redirect(url_for('main.principalAd'))
-            
-                # Crear una instancia del objeto Producto con los datos recibidos
-                nuevo_producto = Producto(nombre=nombre, descripcion=descripcion, talla=talla, color=color, modelo=modelo,
-                                        precio=precio, imagen=img, stock_existencia=stock_existencia)
-                # Agregar el nuevo producto a la sesión de la base de datos
-                db.session.add(nuevo_producto)
-        
-                # Obtener el objeto Producto creado en la sesión de la base de datos
-                producto = db.session.query(Producto).order_by(Producto.id.desc()).first()
-                print(f"Producto: {producto.id}")
-
                 
                 explotacion_material = ExplotacionMaterial(producto_id=producto.id, material_id=material.id, cantidad_usada=cantidad_utilizada_total, cantidadIndividual=cantidadesIndi)
                 db.session.add(explotacion_material)
@@ -128,13 +135,12 @@ def administrador():
                 # Mensaje de depuración
                 print(f"Producto: {producto.id}, Material: {material_id}, Cantidad utilizada: {cantidad_utilizada_total}")
 
-            # Guardar los cambios en la sesión de la base de datos
-            db.session.commit()
+        # Guardar los cambios en la sesión de la base de datos
+        db.session.commit()
 
         #Redirigir al administrador a la página principal del panel de control
         flash("El producto ha sido agregado exitosamente.", "success")
     return redirect(url_for('main.principalAd'))
-
 
 
 
@@ -222,7 +228,16 @@ def actualizarStock():
                     flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
                     return redirect(url_for('main.principalAd'))
                 print("estos son los materiales", materiales)
-
+        # Actualizar el stock del producto
+        print("este es el stock anterior" + str(stock_anterior))	
+        print("este es el nuevo stock" + str(nuevo_stock))
+        producto.stock_existencia += int(nuevo_stock)
+        print("esta es la suma" + str(producto.stock_existencia))
+        db.session.add(producto)
+        for material_id, (cantidad_utilizada, cantidadesIndi) in cantidad_utilizada_por_material.items():
+            materiales = InventarioMateriaPrima.query.filter_by(id=material_id).all()
+            
+            for material in materiales:
                 cantidad_utilizada_total = cantidad_utilizada * float(nuevo_stock)
                 
                 if cantidad_utilizada_total > material.cantidad:
@@ -243,13 +258,7 @@ def actualizarStock():
 
                 material.cantidad -= cantidad_utilizada_total
                 db.session.add(material)
-        # Actualizar el stock del producto
-        print("este es el stock anterior" + str(stock_anterior))	
-        print("este es el nuevo stock" + str(nuevo_stock))
-        producto.stock_existencia += int(nuevo_stock)
-        print("esta es la suma" + str(producto.stock_existencia))
-        db.session.add(producto)
-
+        
         # Guardar los cambios en la sesión de la base de datos
         db.session.commit()
         flash("El stock se actualizó con éxito", "success")
@@ -263,7 +272,6 @@ def actualizarStock():
     return render_template('actualizarStock.html', producto=producto, id=id, 
                             materiales=materiales, explotacion=explotacion, 
                             cantidades=cantidades)
-
 
 @main.route('/eliminar', methods=['GET', 'POST'])
 @login_required
@@ -352,39 +360,8 @@ def catalogoCompras():
     fechaR= request.form.get('fechaR')
     conteoComprasR=0
     conteoComprasP=0
-
-    if fecha:
-        compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
-                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
-                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
-                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
-                    .filter(Compra.fecha == fecha and Compra.estatus==0)\
-                    .all()
-    else:
-        compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
-                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
-                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
-                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
-                    .filter(Compra.estatus==0)\
-                    .all()
-        conteoComprasR= Compra.query.filter_by(estatus=1).count()
-    
-                    
-    if fechaR:
-        comprasRealizadas = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
-                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
-                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
-                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
-                    .filter(Compra.fecha == fechaR and Compra.estatus==1)\
-                    .all()
-    else:
-        comprasRealizadas = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
-                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
-                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
-                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
-                    .filter(Compra.estatus==1)\
-                    .all()
-        conteoComprasP= Compra.query.filter_by(estatus=0).count()
+    comprasP = False
+    comprasR = False
     
     if request.method == 'POST' and 'confirmar' in request.form:
         idCompra = request.form.get('idCompra')
@@ -401,9 +378,24 @@ def catalogoCompras():
         db.session.commit()
         flash("Compra realizada con exito", "success")
         return redirect(url_for('main.inventarios', id=idCompra, idM=idMaterial, cant=cantidad))
-    return render_template('catalogoCompras.html', compras=compras,
+    if request.method == 'GET':
+        compras = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
+                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
+                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
+                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
+                    .filter(Compra.estatus==0)\
+                    .all()
+        conteoComprasR= Compra.query.filter_by(estatus=1).count()
+        comprasRealizadas = db.session.query(Compra, DetCompra, InventarioMateriaPrima, Proveedor)\
+                    .join(DetCompra, Compra.id == DetCompra.compra_id)\
+                    .outerjoin(InventarioMateriaPrima, DetCompra.material_id == InventarioMateriaPrima.id)\
+                    .join(Proveedor, Compra.proveedor_id == Proveedor.id)\
+                    .filter(Compra.estatus==1)\
+                    .all()
+        conteoComprasP= Compra.query.filter_by(estatus=0).count()
+        return render_template('catalogoCompras.html', compras=compras,
                         comprasRealizadas=comprasRealizadas,conteoComprasR=conteoComprasR,
-                        conteoComprasP=conteoComprasP)
+                        conteoComprasP=conteoComprasP,comprasP=comprasP,comprasR=comprasR)
 
 
 

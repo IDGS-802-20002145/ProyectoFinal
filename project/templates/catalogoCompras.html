@@ -37,13 +37,13 @@
                     <label for="fecha">Fecha de compra :</label>
                     <input type="date" class="form-control mx-2" id="fecha" name="fecha">
                 </div>
-                <button type="submit" class="btn btn-primary" name="buscarP">Buscar</button>
+                <button type="button" class="btn btn-primary" onclick="buscarPorFecha()">Buscar</button>
             </div>
         </div>
         <hr>
         <div class="row">
             <div class="col-md-12">
-                <table class="table">
+                <table class="table" id="comprasTabla">
                     <thead>
                         <tr>
                             <th>Fecha</th>
@@ -64,12 +64,12 @@
                             <td>${{ det.precio }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('main.catalogoCompras') }}">
-                                    <input type="hidden" name="idCompra" value="{{ compra.id }}">
+                                    <input type="hiddden" name="idCompra" value="{{ compra.id }}">
                                     <input type="hidden" name="idMaterial" value="{{ mat.id }}">
                                     <input type="hidden" name="idProveedor" value="{{ prov.id }}">
                                     <input type="hidden" name="idDetalle" value="{{ det.id }}">
                                     <input type="hidden" name="cantidad" value="{{ det.cantidad }}">
-                                    <input type="hidden" name="precio" value="{{ det.precio }}">
+                                    <input type="hiden" name="precio" value="{{ det.precio }}">
                                     <button type="submit" class="btn btn-success" name="confirmar">Confirmar compra
                                     </button>
                             </td>
@@ -94,7 +94,7 @@
                     <label for="fechaR">Fecha de compra :</label>
                     <input type="date" class="form-control mx-2" id="fechaR" name="fechaR">
                 </div>
-                <button type="submit" class="btn btn-primary" name="buscarR">Buscar</button>
+                <button type="button" class="btn btn-primary" onclick="buscarPorFechaR()">Buscar</button>
             </form>
         </div>
     </div>
