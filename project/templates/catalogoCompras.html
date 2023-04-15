@@ -16,11 +16,11 @@
         </div>
         <div class="col-md-6">
             <a onclick="mostrarComprasP();">
-            <div class="panel bg-warning">
-                <h2 class="panel-title">Compras Pendientes</h2>
-                <i class="fa-solid fa-triangle-exclamation fa-shake panel-icon"></i>
-                <span class="panel-text">{{conteoComprasP}}</span>
-            </div>
+                <div class="panel bg-warning">
+                    <h2 class="panel-title">Compras Pendientes</h2>
+                    <i class="fa-solid fa-triangle-exclamation fa-shake panel-icon"></i>
+                    <span class="panel-text">{{conteoComprasP}}</span>
+                </div>
             </a>
         </div>
     </div>
@@ -29,7 +29,8 @@
 
 <div class="container-fluid" id="comprasP" style="display: none;">
     <h1>Compras Pendientes</h1>
-    <button class="btn btn-primary float-right" id="regresar" onclick="regresarCompras();"><i class="fas fa-arrow-left mr-2"> </i>Regresar</button>
+    <button class="btn btn-primary float-right" id="regresar" onclick="regresarCompras();"><i
+            class="fas fa-arrow-left mr-2"> </i>Regresar</button>
     <form method="POST" action="{{ url_for('administrador.catalogoCompras') }}">
         <div class="row">
             <div class="col-md-6">
@@ -37,13 +38,13 @@
                     <label for="fecha">Fecha de compra :</label>
                     <input type="date" class="form-control mx-2" id="fecha" name="fecha">
                 </div>
-                <button type="submit" class="btn btn-primary" name="buscarP">Buscar</button>
+                <button type="button" class="btn btn-primary" onclick="buscarPorFecha()">Buscar</button>
             </div>
         </div>
         <hr>
         <div class="row">
             <div class="col-md-12">
-                <table class="table">
+                <table class="table" id="comprasTabla">
                     <thead>
                         <tr>
                             <th>Fecha</th>
@@ -86,7 +87,8 @@
 
 <div class="container-fluid" id="comprasR" style="display: none;">
     <h1>Compras Realizadas</h1>
-    <button class="btn btn-primary float-right" id="regresar" onclick="regresarCompras();"><i class="fas fa-arrow-left mr-2"> </i>Regresar</button>
+    <button class="btn btn-primary float-right" id="regresar" onclick="regresarCompras();"><i
+            class="fas fa-arrow-left mr-2"> </i>Regresar</button>
     <div class="row">
         <div class="col-md-6">
             <form class="form-inline" method="POST">
@@ -94,7 +96,7 @@
                     <label for="fechaR">Fecha de compra :</label>
                     <input type="date" class="form-control mx-2" id="fechaR" name="fechaR">
                 </div>
-                <button type="submit" class="btn btn-primary" name="buscarR">Buscar</button>
+                <button type="button" class="btn btn-primary" onclick="buscarPorFechaR()">Buscar</button>
             </form>
         </div>
     </div>

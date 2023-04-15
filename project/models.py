@@ -55,7 +55,7 @@ class Producto(db.Model):
     precio = db.Column(db.Float, nullable=False)
     imagen = db.Column(db.String(250), nullable=False)
     stock_existencia = db.Column(db.Integer, nullable=False)
-    estatus = db.Column(db.Boolean, default=0)
+    estatus = db.Column(db.Boolean, default=1)
     det_pedido = db.relationship('DetPedido', backref='producto_detalle', lazy=True, overlaps="producto_detalle")
     explotacion_material = db.relationship('ExplotacionMaterial', backref='producto_explosion', lazy=True, overlaps="producto_explosion")
     det_venta = db.relationship('DetVenta', backref='producto', lazy=True)
@@ -94,6 +94,7 @@ class Venta(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     fecha = db.Column(db.Date, default=datetime, nullable=False)
+    estatus = db.Column(db.Boolean, default=0)
 
 
 

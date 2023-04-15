@@ -6,6 +6,8 @@ from flask import make_response, send_file
 from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app
 from flask_security import login_required, current_user
 from sqlalchemy import and_
+from sqlalchemy import func
+from sqlalchemy.orm import aliased
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -33,14 +35,16 @@ def catalogoC():
 
     prod = Producto.query.filter(Producto.estatus == 1).all()
     modelos = db.session.query(Producto.modelo).distinct().all()
-    otrosAtributos = db.session.query(Producto.modelo,
-                                      Producto.imagen,
-                                      Producto.nombre,
-                                      Producto.precio,
-                                      Producto.color,
-                                      Producto.descripcion,
-                                      Producto.stock_existencia,
-                                      Producto.estatus).group_by(Producto.modelo).all()
+    otrosAtributos = db.session.query(
+                            Producto.modelo,
+                            func.max(Producto.imagen).label('imagen'),  # Utiliza func.max() para obtener la imagen
+                            func.max(Producto.nombre).label('nombre'),  # Utiliza func.max() para obtener el nombre
+                            func.max(Producto.precio).label('precio'),  # Utiliza func.max() para obtener el precio
+                            func.max(Producto.color).label('color'),  # Utiliza func.max() para obtener el color
+                            func.max(Producto.descripcion).label('descripcion'),  # Utiliza func.max() para obtener la descripción
+                            func.max(Producto.stock_existencia).label('stock_existencia'),  # Utiliza func.max() para obtener el stock_existencia
+                            func.max(Producto.estatus).label('estatus')  # Utiliza func.max() para obtener el estatus
+                            ).group_by(Producto.modelo).all()
     print(otrosAtributos)
     productos_por_modelo = {}
     
@@ -54,7 +58,8 @@ def catalogoC():
             'nombre': producto.nombre,
             'descripcion': producto.descripcion,
             'precio': producto.precio,
-            'tallas': producto.talla
+            'tallas': producto.talla,
+            'stock_existencia': producto.stock_existencia
         })
 
     return render_template('catalogoCliente.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos)
