@@ -40,12 +40,12 @@
                         href="{{ url_for('cliente.pedidos') }}"><i class="fa-solid fa-cart-shopping"></i>Tus pedidos</a>
                 </li>
                 {% endif %}
-                {% if current_user.is_authenticated %}
+                
                 <li class="nav-item">
                     <a class="nav-link"
                         href="{{ url_for('cliente.catalogoC') }}">Catálogo</a>
                 </li>
-                {% endif %}
+                
                 {% if current_user.admin %}
                 <li class="nav-item">
                   <a class="nav-link"

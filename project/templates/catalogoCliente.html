@@ -134,8 +134,12 @@
               {% endif %}
             {% endfor %}          
               <button class="btn btn-primary" onclick="verMas('{{modelo}}')">Ver más</button>
+              {% if current_user.is_authenticated%}
               <button class="btn btn-success my-2"  onclick="cantCarrito('{{modelo}}')" id="btnAddCart{{modelo}}">Agregar al carrito</button>
-
+              {% else %}
+              <a href="{{ url_for('auth.login') }}" class="btn btn-success my-2">Agregar al carrito</a>
+              {% endif %}
+              
               <form id="{{loop.index-1}}" action="{{ url_for('cliente.pedidos') }}" method="POST" >   
                 <input type="number" class="form-control my-2" placeholder="Cantidad del producto" style="display: none;" id="txtCantCar{{modelo}}" name="txtCantCar">                   
                 <button type="submit" class="btn btn-info my-2" style="display: none;" onclick="actualizarFormulario('{{loop.index-1}}')" id="addCart{{modelo}}">Agregar al carrito</button>

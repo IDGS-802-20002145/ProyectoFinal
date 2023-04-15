@@ -76,9 +76,7 @@ def pedidos():
 @cliente.route('/eliminarPedido',methods=["GET","POST"])
 @login_required
 def eliminarPedido():
-    print("entro a eliminar")
     idPedido = request.args.get('id')
-    print(idPedido)
     detPed = DetPedido.query.filter_by(pedido_id=idPedido).first()
     if request.method == 'POST':
         pedido = Pedido.query.filter_by(id=idPedido).first()
@@ -105,7 +103,6 @@ def buscarPedido():
     return render_template('./pedidos/pedidos.html', detPed = detPed)
 
 @cliente.route('/catalogoC',methods=["GET","POST"])
-@login_required
 def catalogoC():
 
     prod = Producto.query.filter(Producto.estatus == 1).all()
