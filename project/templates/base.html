@@ -2,118 +2,129 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Urban Mode Co.</title>
-    <link rel="icon" href="../static/img/logo_size_invert.jpg">
-    <link rel="stylesheet" href="../static/fontawesome-free-6.3.0-web/css/all.min.css">
-    <link rel="stylesheet" href="../static/bootstrap-4.3.1-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../static/css/estilos.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sartorial</title>
+  <link rel="icon" href="../static/img/Sartorial_Logo.jpg">
+  <link rel="stylesheet" href="../static/fontawesome-free-6.3.0-web/css/all.min.css">
+  <link rel="stylesheet" href="../static/bootstrap-4.3.1-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/css/estilos.css">
+
 </head>
 
-<body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body id="bod">
+  <nav class="navbar navbar-expand-lg" id="navdvar">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">
-            <img src="../static/img/logo_size_invert.jpg" width="30" height="30" alt="Urban Mode Co.">
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenuHeroA"
-            aria-controls="navbarMenuHeroA" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+      <a class="navbar-brand" href="{{ url_for('main.index') }}">
+        <img src="../static/img/Sartorial_Logo.jpg" width="35" height="35" alt="Urban Mode Co.">
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenuHeroA"
+        aria-controls="navbarMenuHeroA" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <div class="collapse navbar-collapse" id="navbarMenuHeroA">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.index') }}">Inicio</a>
-                </li>
-                {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link"
-                        href="#">{{current_user.name}}</a>
-                </li>
-                {% endif %}
-                {% if current_user.admin %}
-                <li class="nav-item">
-                  <a class="nav-link"
-                      href="{{ url_for('main.principalAd') }}">Productos</a>
-              </li>
-                {% endif%}
-                {% if current_user.admin %}
-                <li class="nav-item">
-                  <a class="nav-link"
-                      href="{{ url_for('main.inventarios') }}">Inventario</a>
-              </li>
-                {% endif%}
+      <div class="collapse navbar-collapse" id="navbarMenuHeroA">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.index') }}" id="al">Inicio</a>
+          </li>
+          {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="al">{{current_user.name}}</a>
+          </li>
+          {% endif %}
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.principalAd') }}" id="al">Productos</a>
+          </li>
+          {% endif%}
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.inventarios') }}" id="al">Inventario</a>
+          </li>
+          {% endif%}
 
-                {% if current_user.admin %}
-                <li class="nav-item">
-                  <a class="nav-link"
-                      href="{{ url_for('main.catalogoCompras') }}">Compras</a>
-              </li>
-                {% endif%}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.nosotros') }}">Nosotros</a>
-                </li>
-                {% if not current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.register') }}">Registro</a>
-                </li>
-                {% endif %}
-                {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.logout') }}">Cerrar Sesión</a>
-                </li>
-                {% endif %}
-                
-            </ul>
-        </div>
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.catalogoCompras') }}" id="al">Compras</a>
+          </li>
+          {% endif%}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.nosotros') }}" id="al">Nosotros</a>
+          </li>
+          {% if not current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.login') }}" id="al">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.register') }}" id="al">Registro</a>
+          </li>
+          {% endif %}
+          {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.logout') }}" id="al">Cerrar Sesión</a>
+          </li>
+          {% endif %}
+
+        </ul>
+      </div>
     </div>
-</nav>
+  </nav>
 
-<section class="hero bg-white text-black">
-  <div class="hero-body">
-    <div class="container-fluid text-center">
-      <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-12">
-          {% block content %}
-          {% endblock %}
+  <section class="hero bg-white text-black">
+    <div class="hero-body">
+      <div class="container-fluid text-center">
+        <div class="row justify-content-center">
+          <div class="col-md-12 col-lg-12" id="content">
+            {% block content %}
+            {% endblock %}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<footer class="footer bg-dark text-white" style="bottom: 0%;">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <h2 class="subtitle text-white">Síguenos en redes sociales</h2>
-        <div class="btn-group" role="group" aria-label="Redes sociales">
-          <a href="https://es-la.facebook.com/" class="btn btn-outline-light rounded-circle">
-            <i class="fab fa-facebook"></i>
-          </a>
-          <a href="https://twitter.com/?lang=es" class="btn btn-outline-light rounded-circle">
-            <i class="fab fa-twitter"></i>
-          </a>
-          <a href="https://www.instagram.com/" class="btn btn-outline-light rounded-circle">
-            <i class="fab fa-instagram"></i>
-          </a>
+  <footer class="footer " style="bottom: 0%;" id="fotter">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5 class="subtitle" id="al">Síguenos en redes sociales</h5>
+          <div class="social-links">
+            <div id="twitter" class="social-btn flex-center">
+              <a href="https://twitter.com/?lang=es"><svg viewBox="0 0 24 24" height="24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z">
+                </path>
+              </svg></a><span>@Sartorial</span>
+            </div>
+
+            <div id="linkedin" class="social-btn flex-center">
+              <a href="https://www.instagram.com/"><svg viewBox="0 0 27 27" height="24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                d="M11.46875,5c-3.55078,0 -6.46875,2.91406 -6.46875,6.46875v9.0625c0,3.55078 2.91406,6.46875 6.46875,6.46875h9.0625c3.55078,0 6.46875,-2.91406 6.46875,-6.46875v-9.0625c0,-3.55078 -2.91406,-6.46875 -6.46875,-6.46875zM11.46875,7h9.0625c2.47266,0 4.46875,1.99609 4.46875,4.46875v9.0625c0,2.47266 -1.99609,4.46875 -4.46875,4.46875h-9.0625c-2.47266,0 -4.46875,-1.99609 -4.46875,-4.46875v-9.0625c0,-2.47266 1.99609,-4.46875 4.46875,-4.46875zM21.90625,9.1875c-0.50391,0 -0.90625,0.40234 -0.90625,0.90625c0,0.50391 0.40234,0.90625 0.90625,0.90625c0.50391,0 0.90625,-0.40234 0.90625,-0.90625c0,-0.50391 -0.40234,-0.90625 -0.90625,-0.90625zM16,10c-3.30078,0 -6,2.69922 -6,6c0,3.30078 2.69922,6 6,6c3.30078,0 6,-2.69922 6,-6c0,-3.30078 -2.69922,-6 -6,-6zM16,12c2.22266,0 4,1.77734 4,4c0,2.22266 -1.77734,4 -4,4c-2.22266,0 -4,-1.77734 -4,-4c0,-2.22266 1.77734,-4 4,-4z">
+                </path>
+              </svg></a><span>@Sartorial</span>
+            </div>
+
+            <div id="github" class="social-btn flex-center">
+              <a href="https://www.facebook.com/Sartorial_Online"><svg viewBox="0 0 24 24" height="24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                d="M21.12 0H2.88C1.293 0 0 1.293 0 2.88v18.24C0 22.707 1.293 24 2.88 24h9.44v-9.294H8.484v-3.616h3.836V8.32c0-3.813 2.329-5.882 5.718-5.882 1.614 0 3.004.12 3.394.173v3.966l-2.323.001c-1.825 0-2.171.868-2.171 2.129v2.785h4.334l-.567 3.617h-3.767V24h7.356c1.587 0 2.88-1.293 2.88-2.88V2.88C24 1.293 22.707 0 21.12 0z">
+                </path>
+              </svg></a><span>Sartorial</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 text-right">
+          <p id="al">© 2023 Sartorial. Todos los derechos reservados</p>
         </div>
       </div>
-      <div class="col-md-6 text-right">
-        <p class="text-white">© 2023 Urban Mode Co. Todos los derechos reservados</p>
-      </div>
     </div>
-  </div>
-</footer>
-    <script type="text/javascript" src="../static/bootstrap-4.3.1-dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../static/js/jquery.min.js"></script>
-    <script src="../static/js/main.js"></script>
+  </footer>
+  <script type="text/javascript" src="../static/bootstrap-4.3.1-dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../static/js/jquery.min.js"></script>
+  <script src="../static/js/main.js"></script>
 </body>
 
 </html>

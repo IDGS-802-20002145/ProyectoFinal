@@ -41,7 +41,12 @@ def login_post():
     #Si llegamos aqui los datos son correctos y creamos una session para el usuario
     login_user(user,remember=remember)
     logger.info('Acceso concedido para el usuario '+ email + ' el dia '+ fecha_actual)
-    return redirect(url_for('main.principalAd'))
+    
+    if user.has_role('admin'):
+        return redirect(url_for('main.principalAd'))
+    else:
+        return redirect(url_for('main.index'))
+    
 
 
     

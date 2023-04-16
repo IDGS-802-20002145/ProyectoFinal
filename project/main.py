@@ -24,7 +24,12 @@ logger.addHandler(handler)
 def index():
     fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     logger.info('Se inicio la aplicación'+ ' el dia '+ fecha_actual)
-    return render_template('index.html')
+    productos = Producto.query.filter_by(estatus=1).all()
+    
+    if len(productos) == 0:
+        productos = 0
+
+    return render_template('index.html',productos=productos)
 
 # Definimos la ruta para la página de perfil de usuairo
 
@@ -305,6 +310,8 @@ def principalAd():
     print(current_user.admin)
 
     return render_template('principalAd.html', productos=productos)
+
+
 
 @main.route('/inventarios', methods=['GET', 'POST'])
 @login_required
