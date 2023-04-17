@@ -1,6 +1,6 @@
 import os 
 import uuid
-import base64
+import base64, json
 from operator import or_
 from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app, make_response, send_file
 from flask_security import login_required, current_user
@@ -12,7 +12,15 @@ from project.models import  Producto, Role, User, InventarioMateriaPrima, Explot
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash 
 import pandas as pd
+from itertools import groupby
+import cufflinks as cf
+import plotly.express as px
+import plotly.io as pio
 import matplotlib.pyplot as plt
+from plotly.subplots import make_subplots
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import plotly.graph_objs as go
 import io 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -20,6 +28,7 @@ from datetime import datetime
 from reportlab.pdfgen import canvas
 from io import BytesIO
 import matplotlib
+from sqlalchemy import func
 matplotlib.use('Agg')
 
 
@@ -660,137 +669,102 @@ def findUser():
 
 ################################### Gestion de Finanzas #############################
 
-
 @administrador.route("/finanzas", methods=['GET','POST'])
 @login_required
 def finanzas():
-    plt.clf() # Limpiar la figura anterior
-    ventas = pd.read_sql(db.session.query(Venta.fecha, DetVenta.cantidad * DetVenta.precio).\
-        join(DetVenta, Venta.id == DetVenta.venta_id).statement, db.engine)
-    print(ventas)
-    ventas.columns = ['fecha', 'monto']
-    ventas['fecha'] = pd.to_datetime(ventas['fecha'])
-    ventas = ventas.set_index('fecha').resample('M').sum()
-    
-    compras = pd.read_sql(db.session.query(Compra.fecha, DetCompra.cantidad * DetCompra.precio).\
-        join(DetCompra, Compra.id == DetCompra.compra_id).statement, db.engine)
-    compras.columns = ['fecha', 'monto']
-    compras['fecha'] = pd.to_datetime(compras['fecha'])
-    compras = compras.set_index('fecha').resample('M').sum()
-    
-    utilidades = ventas - compras
-    
-    fig, axs = plt.subplots(3, 1, figsize=(10,10))
-    axs[0].plot(ventas.index, ventas['monto'], label='Ventas')
-    axs[0].plot(compras.index, compras['monto'], label='Compras')
-    axs[0].legend()
-    axs[1].plot(ventas.index, ventas['monto'], label='Ventas')
-    axs[1].plot(utilidades.index, utilidades['monto'], label='Utilidades')
-    axs[1].legend()
-    axs[2].plot(compras.index, compras['monto'], label='Compras')
-    axs[2].plot(utilidades.index, -utilidades['monto'], label='Utilidades')
-    axs[2].legend()
-    
-    plt.tight_layout()
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    plot_url = base64.b64encode(img.getvalue()).decode()
-    
-    return render_template('finanzas.html', plot_url=plot_url)
+    ventas = db.session.query(func.sum(DetVenta.cantidad * DetVenta.precio).label('total'), 
+                              func.date_trunc('month', Venta.fecha).label('mes')).join(Venta).group_by('mes').all()
+    fechas = [venta.mes.strftime("%b-%Y") for venta in ventas]
+    totales = [venta.total for venta in ventas]
+
+    fig = Figure()
+    axis = fig.add_subplot(1, 1, 1)
+    axis.plot(fechas, totales)
+    axis.set_xlabel("Fechas")
+    axis.set_ylabel("Ventas totales")
+
+    canvas = FigureCanvas(fig)
+    output = io.BytesIO()
+    canvas.print_png(output)
+    response = make_response(output.getvalue())
+    response.mimetype = 'image/png'
+
+    return render_template('finanzas.html', response=response)
 
 
-# @administrador.route('/gen_excel', methods=['GET'])
-# @login_required
-# def gen_excel():
 
-#     # Obtener el mes y año del formulario
-#     mes = int(request.form.get('mes'))
-#     anio = int(request.form.get('anio'))
-#     # Filtrar las ventas del mes y año especificados
-#     ventas = DetVenta.query.join(Venta).filter(Venta.fecha.year == anio, Venta.fecha.month == mes).all()
+#####################################################################################
 
-#     # Filtrar las compras del mes y año especificados
-#     compras = DetCompra.query.join(Compra).filter(Compra.fecha.year == anio, Compra.fecha.month == mes).all()
+################################### Gestion de Ventas #############################
 
-#     # Crear un DataFrame con la información de ventas y compras
-#     data = []
-#     for venta in ventas:
-#         data.append([venta.producto.nombre, venta.cantidad, venta.precio, venta.venta.fecha])
-#     for compra in compras:
-#         data.append([compra.material.nombre, compra.cantidad, compra.precio, compra.compra.fecha])
-#     df = pd.DataFrame(data, columns=['Producto/Material', 'Cantidad', 'Precio', 'Fecha'])
+@administrador.route('/ventas', methods=['GET', 'POST'])
+@login_required
+def ventas():
+    # Obtener ventas pendientes
+    ventas_pendientes = db.session.query(Venta, User).\
+        join(User, Venta.user_id == User.id).\
+        filter(Venta.estatus == 0).all()
 
-#     # Crear un archivo Excel a partir del DataFrame
-#     output = io.BytesIO()
-#     writer = pd.ExcelWriter(output, engine='xlsxwriter')
-#     df.to_excel(writer, sheet_name='Reporte', index=False)
-#     writer.save()
-#     output.seek(0)
-
-#     # Devolver el archivo Excel como respuesta
-#     response = make_response(output.read())
-#     response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-#     response.headers['Content-Disposition'] = f'attachment; filename=reporte_{anio}_{mes}.xlsx'
-#     return response
+    conteo_ventas_pendientes= db.session.query(func.count()).filter(Venta.estatus == 0).scalar()
 
 
-# @administrador.route('/gen_pdf')
-# @login_required
-# def gen_pdf():
+    # Obtener ventas enviadas
+    ventas_enviadas =  db.session.query(Venta, User).\
+        join(User, Venta.user_id == User.id).\
+        filter(Venta.estatus == 1).all()
+        
+    conteo_ventas_enviadas= db.session.query(func.count()).filter(Venta.estatus == 1).scalar()
+        
+    print(ventas_pendientes)
 
-#     # Obtener el mes y año del formulario
-#     mes = int(request.form.get('mes'))
-#     anio = int(request.form.get('anio'))
-#  # Filtrar las ventas del mes y año especificados
-#     ventas = DetVenta.query.join(Venta).filter(Venta.fecha.year == anio, Venta.fecha.month == mes).all()
+    return render_template('ventas.html', ventas_pendientes=ventas_pendientes, ventas_enviadas=ventas_enviadas,
+                           conteo_ventas_pendientes=conteo_ventas_pendientes, 
+                           conteo_ventas_enviadas=conteo_ventas_enviadas)
 
-#     # Filtrar las compras del mes y año especificados
-#     compras = DetCompra.query.join(Compra).filter(Compra.fecha.year == anio, Compra.fecha.month == mes).all()
+@administrador.route('/detalleVenta', methods=['GET', 'POST'])
+@login_required
+def detalleVenta():
+    if request.method == 'GET':
+        id_venta = request.args.get('id')
+        estatus = request.args.get('estatus')
+        detalle_ventas = db.session.query(Venta, DetVenta, Producto)\
+        .join(DetVenta, Venta.id == DetVenta.venta_id)\
+        .join(Producto, DetVenta.producto_id == Producto.id)\
+        .filter(Venta.id == id_venta).all()
 
-#     # Crear un DataFrame con la información de ventas y compras
-#     data = []
-#     for venta in ventas:
-#         data.append([venta.producto.nombre, venta.cantidad, venta.precio, venta.venta.fecha])
-#     for compra in compras:
-#         data.append([compra.material.nombre, compra.cantidad, compra.precio, compra.compra.fecha])
+        # Creamos un diccionario para almacenar los productos y sus cantidades
+        productos = {}
+        for venta, det_venta, producto in detalle_ventas:
+            if producto.nombre in productos and producto.talla == productos[producto.nombre]['talla']:
+                productos[producto.nombre]['cantidad'] += det_venta.cantidad
+                productos[producto.nombre]['precio'] += det_venta.precio
+            else:
+                productos[producto.nombre] = {
+                    'talla': producto.talla,
+                    'color': producto.color,
+                    'modelo': producto.modelo,
+                    'precio': det_venta.precio,
+                    'cantidad': det_venta.cantidad,
+                }
 
-#     df = pd.DataFrame(data, columns=['Producto/Material', 'Cantidad', 'Precio', 'Fecha'])
+        # Convertimos el diccionario a una lista para pasarlo al template
+        lista_productos = []
+        for nombre, producto in productos.items():
+            lista_productos.append({
+                'nombre': nombre,
+                'talla': producto['talla'],
+                'color': producto['color'],
+                'modelo': producto['modelo'],
+                'precio': producto['precio'],
+                'cantidad': producto['cantidad'],
+            })
 
-#     # Crear el PDF con la información del DataFrame
-#     buffer = io.BytesIO()
-#     pdf = canvas.Canvas(buffer)
-#     pdf.setTitle(f"Reporte de finanzas - {mes}/{anio}")
+    return render_template('detalleVenta.html', detalle_ventas=lista_productos, estatus=estatus)
 
-#     pdf.drawString(50, 800, f"Reporte de finanzas - {mes}/{anio}")
-#     pdf.drawString(50, 750, "Ventas:")
-#     pdf.drawString(50, 730, "Producto")
-#     pdf.drawString(150, 730, "Cantidad")
-#     pdf.drawString(250, 730, "Precio")
-#     pdf.drawString(350, 730, "Fecha")
-#     y = 710
-#     for _, row in df[df['Producto/Material'].str.contains('producto')].iterrows():
-#         pdf.drawString(50, y, str(row['Producto/Material']))
-#         pdf.drawString(150, y, str(row['Cantidad']))
-#         pdf.drawString(250, y, str(row['Precio']))
-#         pdf.drawString(350, y, str(row['Fecha']))
-#         y -= 20
 
-#     pdf.drawString(50, y, "Compras:")
-#     pdf.drawString(50, y-20, "Material")
-#     pdf.drawString(150, y-20, "Cantidad")
-#     pdf.drawString(250, y-20, "Precio")
-#     pdf.drawString(350, y-20, "Fecha")
-#     y -= 40
-#     for _, row in df[df['Producto/Material'].str.contains('material')].iterrows():
-#         pdf.drawString(50, y, str(row['Producto/Material']))
-#         pdf.drawString(150, y, str(row['Cantidad']))
-#         pdf.drawString(250, y, str(row['Precio']))
-#         pdf.drawString(350, y, str(row['Fecha']))
-#         y -= 20
 
-#     pdf.showPage()
-#     pdf.save()
 
-#     buffer.seek(0)
-#     return send_file(buffer, attachment_filename=f"reporte_finanzas_{mes}_{anio}.pdf", as_attachment=True)
+
+
+
+#####################################################################################

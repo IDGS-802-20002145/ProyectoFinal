@@ -90,3 +90,20 @@ function buscarPorFechaR() {
         }
     });
 }
+
+
+function mostrarVentaE() {
+    $('#ventasE').show();
+    $('#ventasDasboards').hide();
+
+}
+function mostrarVentasPE() {
+    $('#ventasP').show();
+    $('#ventasDasboards').hide();
+}
+
+function regresarVentas() {
+    $('#ventasP').hide();
+    $('#ventasE').hide();
+    $('#ventasDasboards').show();
+}
