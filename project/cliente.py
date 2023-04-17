@@ -3,7 +3,7 @@ import uuid
 from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
-from sqlalchemy import func, text
+from sqlalchemy import and_, func, text
 from . import db
 from project.models import DetPedido, Pedido, Producto, Products, Role
 from werkzeug.utils import secure_filename
@@ -44,7 +44,7 @@ def pedidos():
     if request.method == 'POST':
         #Datos del pedido
         userID = current_user.id
-        cantidad = request.form.get('txtCantCar')
+        cantidad = request.args.get('cantidad')
         fecha_actual = date.today()
         fecha_actual_str = fecha_actual.strftime('%Y-%m-%d')
         #obten la fecha actual sin la hora
@@ -137,5 +137,22 @@ def catalogoC():
 
     return render_template('catalogoCliente.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos)
 
+@cliente.route('/verModelos',methods=["GET","POST"])
+def verModelos():
+        prods = Producto.query.filter(
+            Producto.modelo == request.args.get('modelo')
+            ).group_by(Producto.color).all() 
+               
+        return render_template('catalogoPorModelo.html', productos = prods)
 
+@cliente.route('/verProducto',methods=["GET","POST"])
+def verProducto():
+    if request.method == 'POST':
+
+        prods = Producto.query.filter(and_(Producto.modelo == request.args.get('modelo'), 
+                                    Producto.color == request.args.get('color'))).all()
+
+        print(request.args.get('modelo'), request.args.get('color'))
+        color = request.args.get('color')
+        return render_template('productoDetalle.html', productos = prods, color = color)
 

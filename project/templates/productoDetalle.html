@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    #contenedorProducto {
+        margin: 10px;
+        padding: 33px;
+        box-shadow: 1px 1px 2px 2px gray;
+        float: center;
+    }
+</style>
+<div class="container mt-5" id="contenedorProducto">
+    <div class="row">
+      <div class="col-md-6">
+        <img src="{{ url_for('static', filename='img/' + productos[0].imagen) }}" alt="Imagen del Producto" height="300">
+      </div>
+      <div class="col-md-6">
+        <h1 class="mb-3">Nombre: {{productos[0].nombre}}</h1>
+        <h4 class="mb-3">Modelo : {{productos[0].modelo}}</h4>
+        <p class="mb-2">Color: {{productos[0].color}}</p>        
+        <p class="mb-2">Descripción:{{productos[0].descripcion}}</p>
+        <div class="form-group">
+            <label for="tallaProducto">Tallas disponibles</label>
+            <select class="form-control" id="tallaProducto" name="tallaProducto">
+              {% for producto in productos %}
+              <option value="{{ producto.id }}">
+              {% if producto.talla == 'S'%}  
+              Chica
+              {% elif producto.talla == 'M'%}
+              Mediana
+              {% else %}
+              Grande
+              {% endif %}
+              -
+              {{producto.stock_existencia}} unidades disponibles
+            </option>
+            {% endfor %}
+            </select>
+          </div>
+          {% if current_user.is_authenticated %}
+          <form id="agregarCarrito" method="POST" action="{{ url_for('cliente.pedidos')}}">
+            <div class="form-group">
+                <label for="cantidad">Cantidad: </label>
+                <input type="number" class="form-control" id="txtCantCar" value="1">                
+                <button class="btn btn-primary mt-3" onclick="carrito()">Agregar a Carrito</button>      
+            </div>
+          </form>     
+          {% else %}
+          <form id="regresarLogin" action="{{ url_for('auth.login')}}">
+            <div class="form-group">
+                <label for="cantidad">Cantidad: </label>
+                <input type="number" class="form-control" id="cantidad" value="0">                
+                <button class="btn btn-primary mt-3" onclick="">Agregar a Carrito</button>      
+            </div>
+          </form>  
+          {% endif %}
+     
+        
+      </div>
+    </div>
+  </div>
+  <script>
+function carrito() {
+    // Obtener el elemento select
+    var selectElement = document.getElementById('tallaProducto');
+    
+    // Obtener el valor seleccionado
+    var selectedValue = selectElement.value;
+    
+    // Obtener el elemento de cantidad
+    var cantidadElement = document.getElementById('txtCantCar');
+    
+    // Obtener el valor de cantidad
+    var cantidad = cantidadElement.value;
+
+    // Construir la URL con los valores seleccionados
+    var url = "pedidos?idProducto=" + selectedValue + "&cantidad=" + cantidad;
+
+    // Obtener el formulario
+    var formulario = document.getElementById('agregarCarrito');
+    
+    // Establecer los atributos del formulario
+    formulario.setAttribute('method', 'POST');
+    formulario.setAttribute('action', url);
+    
+    // Enviar el formulario
+    formulario.submit();
+}
+
+    </script>
+{%  endblock %}
