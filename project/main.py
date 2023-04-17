@@ -278,6 +278,9 @@ def actualizarStock():
                             materiales=materiales, explotacion=explotacion, 
                             cantidades=cantidades)
 
+
+
+
 @main.route('/eliminar', methods=['GET', 'POST'])
 @login_required
 def eliminar():
@@ -287,6 +290,12 @@ def eliminar():
         flash("El producto no existe", "error")
         return redirect(url_for('main.admin'))
     if request.method == 'POST':
+        # Eliminar la imagen del producto del sistema de archivos
+        if producto.imagen:
+            imagen_path = os.path.join(current_app.root_path, 'static/img', producto.imagen)
+            if os.path.exists(imagen_path):
+                os.remove(imagen_path)
+        # Actualizar el registro en la base de datos
         producto.estatus = 0
         db.session.add(producto)
         db.session.commit()
@@ -297,6 +306,7 @@ def eliminar():
         print(producto.explotacion_material)
         explotacion= ExplotacionMaterial.query.all()
         return render_template('eliminar.html', producto=producto, id=id)
+
 
 # Ruta para la página principal del panel de control del administrador
 @main.route('/principalAd',methods=["GET","POST"])
@@ -351,7 +361,8 @@ def compras():
         compraNow = db.session.query(Compra).order_by(Compra.id.desc()).first()
         print(f"Producto: {compraNow.id}")
         # Crear un nuevo objeto CompraMaterial para cada material comprado
-        materialC= DetCompra(compra_id=compraNow.id, material_id=material.id, cantidad=cantidad, precio=precio)
+        precioTotal= float(cantidad) * float(precio)
+        materialC= DetCompra(compra_id=compraNow.id, material_id=material.id, cantidad=cantidad, precio=precioTotal)
         db.session.add(materialC)
         db.session.commit()
         

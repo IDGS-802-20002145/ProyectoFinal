@@ -1,0 +1,28 @@
+.form-group label {
+    font-weight: bold;
+}
+
+.form-control {
+    border-radius: 0;
+}
+
+form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0062cc;
+    border-color: #0062cc;
+}
+
+.btn-primary:active {
+    background-color: #1b1b1b;
+    border-color: #1b1b1b;
+    color: #fff;
+}
