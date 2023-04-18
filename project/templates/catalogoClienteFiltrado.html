@@ -99,7 +99,7 @@
     </section>    
     <div class="row">  
       {% for modelo, productos in productos_por_modelo.items() %}
-      {% if otrosAtributos[loop.index-1].estatus == 1 %}
+
         <div class="col-4"> 
           <div class="card mb-4">
             <div class="card-body" style="box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3)" id="{{modelo}}">            
@@ -118,7 +118,6 @@
                 </div>
               </div>
           </div>
-          {%endif%} 
         {% endfor %}
       
     

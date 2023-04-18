@@ -155,4 +155,43 @@ def verProducto():
         print(request.args.get('modelo'), request.args.get('color'))
         color = request.args.get('color')
         return render_template('productoDetalle.html', productos = prods, color = color)
+    
+@cliente.route('/filtrarProducto',methods=["GET","POST"])
+def filtrarProducto():    
+    if request.method == 'POST':   
+        nombre = request.args.get('nombre')
+        prod = Producto.query.filter(and_(Producto.estatus == 1),
+                                     (Producto.nombre.ilike(f"%{nombre}%"))).all()
+        modelos = db.session.query(
+            Producto.modelo).filter(Producto.nombre.ilike(f"%{nombre}%")).distinct().all()
+        print(modelos)
+        otrosAtributos = db.session.query(
+            Producto.modelo,
+            func.max(Producto.imagen).label('imagen'),  # Utiliza func.max() para obtener la imagen
+            func.max(Producto.nombre).label('nombre'),  # Utiliza func.max() para obtener el nombre
+            func.max(Producto.precio).label('precio'),  # Utiliza func.max() para obtener el precio
+            func.max(Producto.color).label('color'),  # Utiliza func.max() para obtener el color
+            func.max(Producto.descripcion).label('descripcion'),  # Utiliza func.max() para obtener la descripción
+            func.max(Producto.stock_existencia).label('stock_existencia'),  # Utiliza func.max() para obtener el stock_existencia
+            func.max(Producto.estatus).label('estatus')  # Utiliza func.max() para obtener el estatus
+        ).filter(Producto.nombre.ilike(f"%{nombre}%")).group_by(Producto.modelo).all()
+        
+        print(otrosAtributos)
+        productos_por_modelo = {}
+        
+        for modelo in modelos:
+            productos_por_modelo[modelo[0]] = []
+
+        for producto in prod:
+            modelo = producto.modelo
+            productos_por_modelo[modelo].append({
+                'id': producto.id,
+                'nombre': producto.nombre,
+                'descripcion': producto.descripcion,
+                'precio': producto.precio,
+                'tallas': producto.talla,
+                'stock_existencia': producto.stock_existencia
+            })
+    return render_template('catalogoClienteFiltrado.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos)
+
 
