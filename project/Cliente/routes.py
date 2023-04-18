@@ -620,4 +620,33 @@ def pago_tarjetaT():
 
 
 
-##############################################################
+#############################################################################################################
+
+
+################################################### Modulo de ventas #########################################
+
+@cliente.route('/misCompras', methods=['GET', 'POST'])
+def misCompras():
+    ventas_por_aprobar = Venta.query.filter_by(user_id=current_user.id, estatus=0).all()
+    ventasPA = {}
+    for venta in ventas_por_aprobar:
+        detalles = DetVenta.query.filter_by(venta_id=venta.id).all()
+        productos_dict = {}
+        for detalle in detalles:
+            producto = Producto.query.get(detalle.producto_id)
+            key = (venta.fecha, producto.nombre, producto.talla)
+            if key in productos_dict:
+                productos_dict[key]['cantidad'] += detalle.cantidad
+            else:
+                productos_dict[key] = {
+                    'cantidad': detalle.cantidad,
+                    'precio': producto.precio,
+                }
+        ventasPA[venta.id] = {
+            'fecha': venta.fecha,
+            'productos': productos_dict,
+        }
+        print(ventasPA)
+    return render_template('misCompras.html', ventas=ventasPA)
+
+#############################################################################################################

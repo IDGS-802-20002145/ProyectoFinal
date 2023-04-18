@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <div class="container-fluid" id="detVentas">
 
     <h1>Detalle Venta</h1>
@@ -21,8 +22,10 @@
                     </tr>
                 </thead>
                 <tbody>
+
                     {% for producto in detalle_ventas %}
                     <tr>
+
                         <td>{{ producto.nombre }}</td>
                         <td>{{ producto.talla }}</td>
                         <td>{{ producto.cantidad }}</td>
@@ -34,17 +37,17 @@
             </table>
         </div>
     </div>
-    {% if estatus == True %}
+ 
     <div class="row">
-        <p>La venta ya ha sido enviada.</p>
-    </div>
-    {% else %}
-    <div class="row">
-        <button class="btn-primary"> Confirmar envío </button>
-    </div>
-    {% endif %}
+        <form action="/detalleVenta" method="POST">
+            <input type="number" name="idDetVent" value="{{id_venta}}" hidden>
+            <button type="submit" class="btn-primary"
+                style="display: {% if not estatus %}none{% else %}block{% endif %};"> Confirmar envío
+            </button>
 
-
+        </form>
+        <p style="display: {% if estatus %}none{% endif %};">La venta ya ha sido enviada.</p>
+    </div>
 </div>
 
 <style>

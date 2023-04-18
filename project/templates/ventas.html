@@ -59,12 +59,14 @@
                             <td>{{ venta.fecha }}</td>
                             <td>{{ user.name }}</td>
                             <td>
-                                    <a href="{{ url_for('administrador.detalleVenta', id=venta.id, estatus=venta.estatus) }}"
-                                        class="btn btn-primary">
-                                        <i class="fa-solid fa-eye fa-flip" style="color: #000000;"></i> Ver detalles</a>
+                                <input type="number" name="id" value="{{venta.id}}" hidden>
+                                <a href="{{ url_for('administrador.detalleVenta', id=venta.id, estatus=venta.estatus) }}"
+                                    class="btn btn-primary">
+                                    <i class="fa-solid fa-eye fa-flip" style="color: #000000;"></i> Ver detalles</a>
                             </td>
                             <td>
-                                <form method="POST" action="">
+                                <form method="POST" action="/ventas">
+                                    <input type="number" name="id" value="{{venta.id}}" hidden>
                                     <button type="submit" class="btn btn-success" name="confirmar">Confirmar
                                         Envio</button>
                                 </form>
@@ -114,9 +116,8 @@
                         <td>{{ venta.fecha }}</td>
                         <td>{{ user.name }}</td>
                         <td>
-                            <a href="{{ url_for('administrador.detalleVenta', id=venta.id, estatus=venta.estatus) }}"
-                                        class="btn btn-primary">
-                                        <i class="fa-solid fa-eye fa-flip" style="color: #000000;"></i> Ver detalles</a>
+                            <a href="{{ url_for('administrador.detalleVenta', id=venta.id) }}" class="btn btn-primary">
+                                <i class="fa-solid fa-eye fa-flip" style="color: #000000;"></i> Ver detalles</a>
                         </td>
                     </tr>
                     {% endfor %}

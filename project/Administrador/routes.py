@@ -699,7 +699,7 @@ def finanzas():
 
 @administrador.route('/ventas', methods=['GET', 'POST'])
 @login_required
-def ventas():
+def ventas_por_aprobar():
     # Obtener ventas pendientes
     ventas_pendientes = db.session.query(Venta, User).\
         join(User, Venta.user_id == User.id).\
@@ -717,16 +717,29 @@ def ventas():
         
     print(ventas_pendientes)
 
+        
+    if request.method == 'POST':
+        id_venta = request.form.get('id')
+        print(id_venta, " ID Venta")
+        venta = Venta.query.filter_by(id=id_venta).first()
+        venta.estatus = True        
+        db.session.commit()
+
+        flash('Se ha confirmado el envío', 'success')
+
+        return redirect(url_for('administrador.ventas'))
+
     return render_template('ventas.html', ventas_pendientes=ventas_pendientes, ventas_enviadas=ventas_enviadas,
                            conteo_ventas_pendientes=conteo_ventas_pendientes, 
                            conteo_ventas_enviadas=conteo_ventas_enviadas)
 
 @administrador.route('/detalleVenta', methods=['GET', 'POST'])
 @login_required
-def detalleVenta():
+def detalleVenta():  
     if request.method == 'GET':
         id_venta = request.args.get('id')
         estatus = request.args.get('estatus')
+        print(estatus, "ESTATUS")
         detalle_ventas = db.session.query(Venta, DetVenta, Producto)\
         .join(DetVenta, Venta.id == DetVenta.venta_id)\
         .join(Producto, DetVenta.producto_id == Producto.id)\
@@ -759,7 +772,18 @@ def detalleVenta():
                 'cantidad': producto['cantidad'],
             })
 
-    return render_template('detalleVenta.html', detalle_ventas=lista_productos, estatus=estatus)
+    if request.method == 'POST':
+        id_venta_post = request.form.get('idDetVent')
+        print(id_venta_post, " ID Venta")
+        venta = Venta.query.filter_by(id=id_venta_post).first()
+        venta.estatus = True        
+        db.session.commit()
+
+        flash('Se ha confirmado el envío', 'success')
+
+        return redirect(url_for('administrador.ventas'))
+
+    return render_template('detalleVenta.html', detalle_ventas=lista_productos, estatus=estatus, id_venta=id_venta)
 
 
 
