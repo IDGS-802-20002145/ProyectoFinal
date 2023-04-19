@@ -67,8 +67,7 @@ h6 {
 html,
 body {
   height: 100%;
-  margin: 0;
-  padding: 0;
+  background-color: beige;
 }
 
 /*estilos para que mis cards se vean bien*/
@@ -305,4 +304,127 @@ body {
   flex-basis: 33.33%;
   padding: 0 10px;
   box-sizing: border-box;
+}
+
+
+
+/*estilos para los social buttons*/
+
+.social-links,
+.flex-center {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: left;
+  -ms-flex-pack: left;
+  justify-content: left;
+  -webkit-box-align: left;
+  -ms-flex-align: left;
+  align-items: center;
+}
+
+.social-btn {
+  cursor: pointer;
+  height: 50px;
+  width: 50px;
+  font-family: 'Titillium Web', sans-serif;
+  color: #333;
+  border-radius: 10px;
+  -webkit-box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.1);
+  background: white;
+  margin: 5px;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.social-btn svg {
+  height: 24px;
+  width: 24px;
+}
+
+.social-btn span {
+  width: 0px;
+  overflow: hidden;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+  text-align: center;
+  margin-left: 5px;
+}
+
+.social-btn:hover {
+  width: 150px;
+  border-radius: 5px;
+}
+
+.social-btn:hover span {
+  padding: 2px;
+  width: 80px;
+}
+
+#twitter svg {
+  fill: #1da1f2;
+}
+
+#linkedin svg {
+  fill: #cc39a4;
+}
+
+#github {
+  fill: #005cbf;
+}
+
+#navdvar {
+  background-color: #0D0D0D;
+}
+
+#fotter {
+  background-color: #0D0D0D;
+}
+
+#al {
+  color: gold;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+#content {
+  background-color: #F2EFE9;
+}
+
+.navbar-nav a:hover {
+  color: #f5a623;
+  /* Cambia el color del enlace cuando el mouse está encima */
+}
+
+.navbar-nav a::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 2px;
+  background-color: #f5a623;
+  /* Color de la línea */
+  transition: width 0.3s ease-in-out;
+  /* Animación de la línea */
+}
+
+.navbar-nav a:hover::after {
+  width: 100%;
+  /* Ancho de la línea cuando el mouse está encima */
+}
+
+footer {
+  background: #0D0D0D;
+  padding: 45px 0 30px 0;
+  margin: auto;
+  overflow: hidden;
+  display: absolute;
+}
+
+
+
+.contenedor-footer {
+  text-align: justify;
 }

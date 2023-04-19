@@ -1,0 +1,231 @@
+#bienvenida {
+    background-image: url(../img/FondoSectionBienvenida.jpeg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: auto;
+    height: 600px;
+    text-align: center;
+    padding-top: 300px;
+}
+
+h1 {
+    color: gold;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 70px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-top: 0;
+}
+
+h2 {
+    color: gold;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 40px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-top: 0;
+}
+
+h4 {
+    color: black;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-top: 0;
+}
+
+#sectionInformacion {
+    padding: 20px;
+    text-align: center;
+}
+
+#sectionInformacion h5 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 0;
+}
+
+#sectionInformacion span {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #0056b3;
+    border-radius: 50px;
+    margin-top: 20px;
+}
+
+h4.text-center {
+    font-size: 2rem;
+    color: #444;
+    margin-bottom: 1rem;
+    text-shadow: 1px 1px #eee;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 0.5rem;
+}
+
+/*****carrousel 3d automatique*****/
+
+* {
+    box-sizing: border-box;
+}
+
+img {
+    max-width: 100%
+}
+
+.contenu_carou_auto {
+
+    margin: 2rem auto;
+    width: 420px;
+    height: 279px;
+    perspective: 8000px
+}
+
+.caroussel-image {
+
+    animation: rotation 24s infinite alternate linear;
+    transform-style: preserve-3d;
+    position: relative;
+
+}
+
+.caroussel-image img {
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+
+}
+
+
+
+.caroussel-image img {
+
+    filter: drop-shadow(0 12px 5px hsla(0, 0%, 0%, .4));
+    width: 280px;
+    height: 300px;
+    left: 10px;
+    outline: 1px solid transparent;
+    backface-visibility: hidden
+}
+
+.caroussel-image img:nth-child(1) {
+
+    transform: translate3d(0, 0, 495px)
+}
+
+.caroussel-image img:nth-child(2) {
+
+    transform: rotateY(45deg) translateZ(495px)
+}
+
+.caroussel-image img:nth-child(3) {
+
+    transform: rotateY(90deg) translateZ(495px)
+}
+
+.caroussel-image img:nth-child(4) {
+
+    transform: rotateY(135deg) translateZ(495px)
+}
+
+.caroussel-image img:nth-child(5) {
+
+    transform: rotateY(180deg) translateZ(495px)
+}
+
+.caroussel-image img:nth-child(6) {
+
+    transform: rotateY(225deg) translateZ(495px)
+}
+
+.caroussel-image img:nth-child(7) {
+
+    transform: rotateY(270deg) translateZ(495px)
+}
+
+.caroussel-image img:nth-child(8) {
+
+    transform: rotateY(315deg) translateZ(495px)
+}
+
+
+
+
+@keyframes rotation {
+    from {
+        transform: rotatey(0)
+    }
+
+    to {
+        transform: rotatey(0.5turn)
+    }
+}
+
+
+
+
+/*****fin carrousel 3d automatique*****/
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    border-radius: 5px;
+    height: 100%;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+
+.card-img-top {
+    height: 200px;
+}
+
+.card-body {
+    text-align: center;
+}
+
+.card-title {
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-text {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.more-info-btn {
+    background-color: #292929;
+    border-color: #292929;
+    margin-right: 0.5rem;
+}
+
+.more-info-btn:hover {
+    background-color: #212121;
+    border-color: #212121;
+}
+
+.card-footer {
+    text-align: center;
+    background-color: #212121;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: gold;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}

@@ -298,8 +298,14 @@ def eliminar():
     producto = Producto.query.get(id)
     if producto is None:
         flash("El producto no existe", "error")
-        return redirect(url_for('administrador.admin'))
+        return redirect(url_for('main.admin'))
     if request.method == 'POST':
+        # Eliminar la imagen del producto del sistema de archivos
+        if producto.imagen:
+            imagen_path = os.path.join(current_app.root_path, 'static/img', producto.imagen)
+            if os.path.exists(imagen_path):
+                os.remove(imagen_path)
+        # Actualizar el registro en la base de datos
         producto.estatus = 0
         db.session.add(producto)
         db.session.commit()
@@ -358,13 +364,13 @@ def compras():
         compraNow = db.session.query(Compra).order_by(Compra.id.desc()).first()
         print(f"Producto: {compraNow.id}")
         # Crear un nuevo objeto CompraMaterial para cada material comprado
-        materialC= DetCompra(compra_id=compraNow.id, material_id=material.id, cantidad=cantidad, precio=precio)
+        precioTotal= float(cantidad) * float(precio)
+        materialC= DetCompra(compra_id=compraNow.id, material_id=material.id, cantidad=cantidad, precio=precioTotal)
         db.session.add(materialC)
         db.session.commit()
         
         flash("La compra esta pendiente por revisar", "warning")
         return redirect(url_for('administrador.inventarios'))
-
 @administrador.route('/catalogoCompras', methods=['GET', 'POST'])
 @login_required
 def catalogoCompras():
@@ -669,27 +675,25 @@ def findUser():
 
 ################################### Gestion de Finanzas #############################
 
+
 @administrador.route("/finanzas", methods=['GET','POST'])
 @login_required
 def finanzas():
-    ventas = db.session.query(func.sum(DetVenta.cantidad * DetVenta.precio).label('total'), 
-                              func.date_trunc('month', Venta.fecha).label('mes')).join(Venta).group_by('mes').all()
-    fechas = [venta.mes.strftime("%b-%Y") for venta in ventas]
-    totales = [venta.total for venta in ventas]
-
-    fig = Figure()
-    axis = fig.add_subplot(1, 1, 1)
-    axis.plot(fechas, totales)
-    axis.set_xlabel("Fechas")
-    axis.set_ylabel("Ventas totales")
-
-    canvas = FigureCanvas(fig)
-    output = io.BytesIO()
-    canvas.print_png(output)
-    response = make_response(output.getvalue())
-    response.mimetype = 'image/png'
-
-    return render_template('finanzas.html', response=response)
+    ventas_por_mes = db.session.query(
+                func.date_format(Venta.fecha, '%Y-%m').label('mes'),
+                func.sum(DetVenta.cantidad * DetVenta.precio).label('total')
+            ).join(DetVenta).filter(
+                Venta.estatus == True
+            ).group_by('mes').all()
+            
+    compras_por_mes = db.session.query(
+                func.date_format(Compra.fecha, '%Y-%m').label('mes'),
+                func.sum(DetCompra.cantidad * DetCompra.precio).label('total')
+            ).join(DetCompra).filter(
+                Compra.estatus == True
+            ).group_by('mes').all()
+    print(compras_por_mes, " Compras")
+    return render_template('finanzas.html', ventas_por_mes=ventas_por_mes, compras_por_mes=compras_por_mes)
 
 
 
@@ -699,7 +703,7 @@ def finanzas():
 
 @administrador.route('/ventas', methods=['GET', 'POST'])
 @login_required
-def ventas_por_aprobar():
+def ventas():
     # Obtener ventas pendientes
     ventas_pendientes = db.session.query(Venta, User).\
         join(User, Venta.user_id == User.id).\

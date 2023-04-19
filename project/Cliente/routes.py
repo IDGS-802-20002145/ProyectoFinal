@@ -80,7 +80,7 @@ def pedidos():
     if request.method == 'POST':
         #Datos del pedido
         userID = current_user.id
-        cantidad = request.form.get('txtCantCar', " Esta es la cantidad")
+        cantidad = request.args.get('cantidad')
         fecha_actual = date.today()
         fecha_actual_str = fecha_actual.strftime('%Y-%m-%d')
         #obten la fecha actual sin la hora
@@ -634,7 +634,7 @@ def misCompras():
         productos_dict = {}
         for detalle in detalles:
             producto = Producto.query.get(detalle.producto_id)
-            key = (venta.fecha, producto.nombre, producto.talla)
+            key = (venta.fecha, producto.nombre, producto.talla, producto.id, producto.imagen)
             if key in productos_dict:
                 productos_dict[key]['cantidad'] += detalle.cantidad
             else:
@@ -647,6 +647,33 @@ def misCompras():
             'productos': productos_dict,
         }
         print(ventasPA)
-    return render_template('misCompras.html', ventas=ventasPA)
+
+        ventas_aprobadas = Venta.query.filter_by(user_id=current_user.id, estatus=1).all()
+        print(ventas_aprobadas)
+        ventasA = {}
+        for venta in ventas_aprobadas:
+            detallesA = DetVenta.query.filter_by(venta_id=venta.id).all()
+            productos_dictA = {}
+            for detalle in detallesA:
+                producto = Producto.query.get(detalle.producto_id)
+                key = (venta.fecha, producto.nombre, producto.talla, producto.id, producto.imagen)
+                if key in productos_dictA:
+                    productos_dictA[key]['cantidad'] += detalle.cantidad
+                else:
+                    productos_dictA[key] = {
+                        'cantidad': detalle.cantidad,
+                        'precio': producto.precio,
+                    }
+            ventasA[venta.id] = {
+                'fecha': venta.fecha,
+                'productos': productos_dictA,
+            }
+            print(ventasA, " Ventas Aprobadas")
+    return render_template('misCompras.html', ventas=ventasPA, ventasAp=ventasA)
+
+
+
+
+
 
 #############################################################################################################

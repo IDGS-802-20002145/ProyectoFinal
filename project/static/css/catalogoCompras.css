@@ -56,3 +56,12 @@
         color: #23527c;
         border-bottom: 1px solid #23527c;
     }
+
+    .contenedor-footer {
+        display: block;
+        width: 100%;
+        justify-content: space-evenly;
+        margin: auto;
+        padding-bottom: 1px;
+        border-bottom: 1px solid #ccc;
+    }
