@@ -89,7 +89,7 @@
   <h1 class="text-center my-4">Productos Destacados</h1>
   <p>Estos son algunos de nuestros productos más populares:</p>
   <section class="text-left"><b>Filtrar por:</b>  
-    <form id="filtrosForm" method="POST" action="{{ url_for('cliente.filtrarProducto')}}">      
+    <form id="filtrosForm" method="POST" action="{{ url_for('main.filtrarProducto')}}">      
     <button type="submit" id="btnTrajes" onclick="formFlitros('btnTrajes')" class="btn btn-info">Trajes</button>
     <button type="submit" id="btnCamisas" onclick="formFlitros('btnCamisas')" class="btn btn-info">Camisas</button>
     <button type="submit" id="btnSacos" onclick="formFlitros('btnSacos')" class="btn btn-info">Sacos</button>
@@ -113,7 +113,7 @@
                 </p>            
               <h5 class="card-text h5" style="display: table;">Modelo : {{ modelo }}</h5>
               {% endif %}      
-              <form method="post" action="{{ url_for('cliente.verModelos', modelo = modelo) }}">
+              <form method="post" action="{{ url_for('main.verModelos', modelo = modelo) }}">
                 <button type="submit" class="btn btn-success">Ver modelos</button>
               </form>
               </div>
@@ -149,7 +149,7 @@
     if (selectedRadioButton !== null) {
       var idSeleccionado = selectedRadioButton.value;
       
-      var url = "{{ url_for('cliente.verProducto', id='') }}" + idSeleccionado;
+      var url = "{{ url_for('main.verProducto', id='') }}" + idSeleccionado;
       
       document.getElementById(idForm).setAttribute('method', 'POST');
       document.getElementById(idForm).setAttribute('action', url);
@@ -204,7 +204,7 @@
       else if (nombre == 'btnCorbatas'){
         var idSeleccionado = 'Corbata';
       }
-      var url = "{{ url_for('cliente.filtrarProducto', nombre ='') }}" + idSeleccionado;
+      var url = "{{ url_for('main.filtrarProducto', nombre ='') }}" + idSeleccionado;
       document.getElementById('filtrosForm').setAttribute('method', 'POST');
       document.getElementById('filtrosForm').setAttribute('action', url);
       document.getElementById('filtrosForm').submit();

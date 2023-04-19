@@ -374,7 +374,7 @@ def pago_tarjeta():
 def pagarTodo():   
    pedidos_disponibles = "" 
    if request.method == 'GET':
-      pedidos_disponibles = Pedido.query.filter_by(estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia > DetPedido.cantidad).all()
+      pedidos_disponibles = Pedido.query.filter_by(user_id=current_user.id, estatus=1).join(DetPedido).join(Producto).filter(Producto.stock_existencia > DetPedido.cantidad).all()
       detProductos = {}
       total = 0
       productos_sin_existencias_nombres = []
@@ -648,27 +648,27 @@ def misCompras():
         }
         print(ventasPA)
 
-        ventas_aprobadas = Venta.query.filter_by(user_id=current_user.id, estatus=1).all()
-        print(ventas_aprobadas)
-        ventasA = {}
-        for venta in ventas_aprobadas:
-            detallesA = DetVenta.query.filter_by(venta_id=venta.id).all()
-            productos_dictA = {}
-            for detalle in detallesA:
-                producto = Producto.query.get(detalle.producto_id)
-                key = (venta.fecha, producto.nombre, producto.talla, producto.id, producto.imagen)
-                if key in productos_dictA:
-                    productos_dictA[key]['cantidad'] += detalle.cantidad
-                else:
-                    productos_dictA[key] = {
-                        'cantidad': detalle.cantidad,
-                        'precio': producto.precio,
-                    }
-            ventasA[venta.id] = {
-                'fecha': venta.fecha,
-                'productos': productos_dictA,
-            }
-            print(ventasA, " Ventas Aprobadas")
+    ventas_aprobadas = Venta.query.filter_by(user_id=current_user.id, estatus=1).all()
+    ventasA = {}
+    for venta in ventas_aprobadas:
+        detallesA = DetVenta.query.filter_by(venta_id=venta.id).all()
+        productos_dictA = {}
+        for detalle in detallesA:
+            producto = Producto.query.get(detalle.producto_id)
+            key = (venta.fecha, producto.nombre, producto.talla, producto.id, producto.imagen)
+            if key in productos_dictA:
+                productos_dictA[key]['cantidad'] += detalle.cantidad
+            else:
+                productos_dictA[key] = {
+                    'cantidad': detalle.cantidad,
+                    'precio': producto.precio,
+                }
+        ventasA[venta.id] = {
+            'fecha': venta.fecha,
+            'productos': productos_dictA,
+        }
+        print(ventasA, " Ventas Aprobadas")
+
     return render_template('misCompras.html', ventas=ventasPA, ventasAp=ventasA)
 
 
