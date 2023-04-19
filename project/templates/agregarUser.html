@@ -1,0 +1,63 @@
+{% extends "base.html"%}
+{% block content%}
+
+<section class="hero">
+    <div class="hero-body">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <h2 class="card-header">Usuario</h2>
+                        <form name="sent" action="{{ url_for('administrador.addUser') }}" id="from1"
+                            method="POST" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input class="form-control" name="txtId" type="text"
+                                        placeholder="" disabled hidden>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">Nombre de usuario</label>
+                                <div class="input-group">
+                                    <input class="form-control"  name="txtNombreUser" type="text"
+                                        placeholder="Ingresa el nombre de usuario">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Email:</label>
+                                <div class="input-group">
+                                    <input class="form-control"  name="txtEmailUser" type="email"
+                                        placeholder="Ingresa el estilo de la prenda">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Contraseña:</label>
+                                <div class="input-group">
+                                    <input class="form-control" name="txtContrasenaUser" type="password"
+                                        placeholder="Ingresa la contraseña">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label">Rol de usuario:</label><br>
+                                <input type="radio" name="rolUser" value="cliente">
+                                <label>Cliente</label>
+                                <input type="radio" name="rolUser" value="empleado">
+                                <label>Empleado</label>
+                            </div>                          
+                            
+                            <div class="form-group text-center">
+                                <button class="btn btn-success" name="agregar">Agregar</button>
+                                <a href="/getAllUsers" class="btn btn-warning"><i
+                                        class="icon-action-undo"></i>Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+{% endblock %}

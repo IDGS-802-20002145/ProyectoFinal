@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{%block content%}
+
+<div class="container">
+    <div class="row">
+        <h3>Eiminar Proveedor</h3>
+        <form name="sent" action="/eliminar_prov" id="from1" method="POST">
+            <div class="row control-group">
+                <div class="from-group col-xs-12 float-label-from-group controls">
+                    <input type="text" class="form-control" name="id" id="id" value="{{proveedor.id}}" readonly="readonly">
+                </div>
+            </div>
+            <div class="row control-group">
+                <div class="from-group col-xs-12 float-label-from-group controls">
+                    <input type="text" name="txtNombre" id="txtNombre" class="form-control" value="{{proveedor.nombre}}" readonly="readonly">
+                </div>
+            </div>
+            <div class="row control-group">
+                <div class="form-group col-xs-12 float-label-from-group controls">
+                   <input type="email" name="txtEmail" id="txtEmail" class="form-control" value="{{proveedor.email}}" readonly="readonly">
+                </div>
+            </div>
+            <div class="row control-group">
+                <div class="form-group col-xs-12 float-label-from-group controls">
+                   <input type="text" name="txtTelefono" id="txtTelefono" class="form-control" value="{{proveedor.telefono}}" readonly="readonly">
+                </div>
+            </div>
+            <div class="row control-group">
+                <div class="form-group col-xs-12 float-label-from-group controls">
+                   <input type="text" name="txtDireccion" id="txtDireccion" class="form-control" value="{{proveedor.direccion}}" readonly="readonly">
+                </div>
+            </div>
+           
+            <input type="submit" class="btn btn-danger" id="eliminar" name="eliminar" value="Eliminar">
+            <a href="proveedores" class="btn btn-default"><i class="icon-remove icon-black"></i> Cancelar</a>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

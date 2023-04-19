@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ventas.css') }}">
+<div class="container-fluid" id="ventasDasboards">
+    <div class="row">
+        <div class="col-md-6">
+            <a onclick="mostrarVentaE();">
+                <div class="panel bg-success">
+                    <h2 class="panel-title">Ventas Enviadas</h2>
+                    <i class="fa-solid fa-truck fa-bounce panel-icon" style="color: #000000;"></i>
+                    <span class="panel-text">{{conteo_ventas_enviadas}}</span>
+                </div>
+            </a>
+
+        </div>
+        <div class="col-md-6">
+            <a onclick="mostrarVentasPE();">
+                <div class="panel bg-warning">
+                    <h2 class="panel-title">Ventas Pendientes Por Enviar</h2>
+                    <i class="fa-solid fa-dolly fa-bounce panel-icon" style="color: #000000;"></i>
+                    <span class="panel-text">{{conteo_ventas_pendientes}}</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid" id="ventasP" style="display: none;">
+    <h1>Ventas Pendientes por Enviar</h1>
+    <button class="btn btn-primary float-right" id="regresar" onclick="regresarVentas();"><i
+            class="fas fa-arrow-left mr-2"> </i>Regresar</button>
+    <form method="POST" action="">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="fecha">Fecha de compra :</label>
+                    <input type="date" class="form-control mx-2" id="fecha" name="fecha">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="buscarPorFecha()">Buscar</button>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table" id="comprasTabla">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venta, user in ventas_pendientes %}
+                        <tr>
+                            <td>{{ venta.fecha }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>
+                                <input type="number" name="id" value="{{venta.id}}" hidden>
+                                <a href="{{ url_for('administrador.detalleVenta', id=venta.id, estatus=venta.estatus) }}"
+                                    class="btn btn-primary">
+                                    <i class="fa-solid fa-eye fa-flip" style="color: #000000;"></i> Ver detalles</a>
+                            </td>
+                            <td>
+                                <form method="POST" action="/ventas">
+                                    <input type="number" name="id" value="{{venta.id}}" hidden>
+                                    <button type="submit" class="btn btn-success" name="confirmar">Confirmar
+                                        Envio</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+<div class="container-fluid" id="ventasE" style="display: none;">
+    <h1>Ventas Enviadas</h1>
+    <button class="btn btn-primary float-right" id="regresar" onclick="regresarVentas();"><i
+            class="fas fa-arrow-left mr-2"> </i>Regresar</button>
+    <div class="row">
+        <div class="col-md-6">
+            <form class="form-inline" method="POST">
+                <div class="form-group">
+                    <label for="fechaR">Fecha de compra :</label>
+                    <input type="date" class="form-control mx-2" id="fechaR" name="fechaR">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="buscarPorFechaR()">Buscar</button>
+            </form>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th></th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta, user in ventas_enviadas %}
+                    <tr>
+                        <td>{{ venta.fecha }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>
+                            <a href="{{ url_for('administrador.detalleVenta', id=venta.id) }}" class="btn btn-primary">
+                                <i class="fa-solid fa-eye fa-flip" style="color: #000000;"></i> Ver detalles</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

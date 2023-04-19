@@ -2,97 +2,161 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Urban Mode Co.</title>
-    <link rel="icon" href="../static/img/logo_size_invert.jpg">
-    <link rel="stylesheet" href="../static/fontawesome-free-6.3.0-web/css/all.min.css">
-    <link rel="stylesheet" href="../static/bootstrap-4.3.1-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../static/css/estilos.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sartorial</title>
+  <link rel="icon" href="../static/images/Logo3S.png" style="width: 135px;">
+  <link rel="stylesheet" href="../static/fontawesome-free-6.3.0-web/css/all.min.css">
+  <link rel="stylesheet" href="../static/bootstrap-4.3.1-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/css/estilos.css">
+
 </head>
 
-<body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body id="bod">
+  <header>
+  <nav class="navbar navbar-expand-lg" id="navdvar">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">
-            <img src="../static/img/logo_size_invert.jpg" width="30" height="30" alt="Urban Mode Co.">
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenuHeroA"
-            aria-controls="navbarMenuHeroA" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+      <a class="navbar-brand" href="{{ url_for('main.index') }}">
+        <img src="../static/images/Logo3S.png" width="135px" height="35px" alt="">
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenuHeroA"
+        aria-controls="navbarMenuHeroA" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <div class="collapse navbar-collapse" id="navbarMenuHeroA">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.index') }}">Inicio</a>
-                </li>
-                {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link"
-                        href="{{ url_for('main.principalAd') }}">{{current_user.name}}</a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.nosotros') }}">Nosotros</a>
-                </li>
-                {% if not current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.register') }}">Registro</a>
-                </li>
-                {% endif %}
-                {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.logout') }}">Cerrar Sesión</a>
-                </li>
-                {% endif %}
-                
-            </ul>
-        </div>
+      <div class="collapse navbar-collapse" id="navbarMenuHeroA">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.index') }}" id="al">Inicio</a>
+          </li>
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.principalAd') }}" id="al">Productos</a>
+          </li>
+          {% endif%}
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('administrador.inventarios') }}" id="al">Inventario</a>
+          </li>
+          {% endif%}
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('administrador.proveedores') }}" id="al">Proveedores</a>
+          </li>
+          {% endif%}
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('administrador.getAllUsers') }}" id="al">Usuarios</a>
+          </li>
+          {% endif%}
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('administrador.finanzas') }}" id="al">Finanzas</a>
+          </li>
+          {% endif%}
+
+          {% if current_user.is_authenticated and current_user.admin != 1 %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('cliente.misCompras') }}" id="al">Mis Compras</a>
+          </li>
+          {% endif %}
+
+          {% if current_user.is_authenticated and current_user.admin != 1 %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('cliente.pedidos') }}" id="al">Mis Pedidos</a>
+          </li>
+          {% endif %}
+
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('administrador.catalogoCompras') }}" id="al">Compras</a>
+          </li>
+          {% endif %}
+
+          {% if current_user.admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('administrador.ventas') }}" id="al">Ventas</a>
+          </li>
+          {% endif %}
+
+          {% if current_user.is_authenticated and current_user.admin != 1 %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.nosotros') }}" id="al">Nosotros</a>
+          </li>
+          {% endif %}
+          {% if not current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.login') }}" id="al">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.register') }}" id="al">Registro</a>
+          </li>
+          {% endif %}
+          {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.logout') }}" id="al">Cerrar Sesión</a>
+          </li>
+          {% endif %}
+
+        </ul>
+      </div>
     </div>
-</nav>
+  </nav>
 
-<section class="hero bg-white text-black">
-  <div class="hero-body">
-    <div class="container-fluid text-center">
-      <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-12">
-          {% block content %}
-          {% endblock %}
+  
+    
+      <div class="container-fluid text-center">
+        <section>
+        <div class="row justify-content-center">
+          <div class="col-md-12 col-lg-12" id="content">
+            {% block content %}
+            {% endblock %}
+          </div>
+        </div>
+      </section>
+      </div>
+  
+  </header>
+
+  <footer class="bg-dark text-white">
+    <div class="container py-4">
+      <div class="row">
+        <div class="col-md-3 col-sm-6">
+          <h5 class="mb-3">Navegación</h5>
+          <ul class="list-unstyled">
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Productos</a></li>
+            <li><a href="#">Contacto</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <h5 class="mb-3">Redes Sociales</h5>
+          <ul class="list-unstyled">
+            <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h5 class="mb-3">Sobre nosotros</h5>
+          <p>Somos una tienda especializada en la venta de trajes de alta calidad. Ofrecemos una amplia variedad de estilos y tallas para satisfacer las necesidades de nuestros clientes más exigentes.</p>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col-md-8">
+          <p>&copy; 2023 Todos los derechos reservados</p>
+        </div>
+        <div class="col-md-4">
+          <p class="text-md-right">Hecho con <i class="fas fa-heart"></i> por <a href="#">Mi Empresa</a></p>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<footer class="footer bg-dark text-white">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <h2 class="subtitle text-white">Síguenos en redes sociales</h2>
-        <div class="btn-group" role="group" aria-label="Redes sociales">
-          <a href="https://es-la.facebook.com/" class="btn btn-outline-light rounded-circle">
-            <i class="fab fa-facebook"></i>
-          </a>
-          <a href="https://twitter.com/?lang=es" class="btn btn-outline-light rounded-circle">
-            <i class="fab fa-twitter"></i>
-          </a>
-          <a href="https://www.instagram.com/" class="btn btn-outline-light rounded-circle">
-            <i class="fab fa-instagram"></i>
-          </a>
-        </div>
-      </div>
-      <div class="col-md-6 text-right">
-        <p class="text-white">© 2023 Urban Mode Co. Todos los derechos reservados</p>
-      </div>
-    </div>
-  </div>
-</footer>
-    <script type="text/javascript" src="../static/bootstrap-4.3.1-dist/js/bootstrap.bundle.min.js"></script>
+  </footer>
+  <script type="text/javascript" src="../static/bootstrap-4.3.1-dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../static/js/jquery.min.js"></script>
+  <script src="../static/js/main.js"></script>
 </body>
 
 </html>

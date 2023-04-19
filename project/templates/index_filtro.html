@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="../static/css/index.css">
+
+<section class="hero my-1" id="bienvenida">
+  <div class="hero-body">
+    <div class="container">
+      <h1 class="display-4">
+        ¡Bienvenidos a Sartorial!
+      </h1>
+      <h2 class="lead">
+        Aquí encontrarás la mejor calidad de ropa de etiqueta a los mejores precios.
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section id="carrusel">
+  <h4 class="text-center">Novedades</h4>
+  <div class="contenu_carou_auto">
+    <div class="caroussel-image">
+      {% for produc in prod%}
+      <img src="{{ url_for('static', filename='img/' + produc.imagen) }}" class="card-img-top" alt=""
+                      style="object-fit: cover;">
+      {%endfor%}
+    </div>
+  </div>
+</section>
+
+<section class=" my-8"  id="sectionInformacion">
+  <div>
+    <span class="my-8"><h5>
+      Envios Gratis en todos nuestros productos
+    </h5></span>
+  </div>
+</section>
+
+
+<section class="section my-3">
+  <div class="container">
+    <h4 class="text-center">Echa un vistaso a nuestros productos</h4>
+    <section class="text-left"><b>Filtrar por:</b>  
+      <form id="filtrosForm" method="POST" action="{{ url_for('main.filtrarProducto')}}">      
+      <button type="submit" id="btnTrajes" onclick="formFlitros('btnTrajes')" class="btn btn-info">Trajes</button>
+      <button type="submit" id="btnCamisas" onclick="formFlitros('btnCamisas')" class="btn btn-info">Camisas</button>
+      <button type="submit" id="btnSacos" onclick="formFlitros('btnSacos')" class="btn btn-info">Sacos</button>
+      <button type="submit" id="btnPantalones" onclick="formFlitros('btnPantalones')" class="btn btn-info">Pantalones</button>
+      <button type="submit" id="btnCorbatas" onclick="formFlitros('btnCorbatas')" class="btn btn-info my-2">Corbartas</button>
+    </form>
+    <a href="{{ url_for('main.index') }}" class="btn btn-info my-2">Todos</a>
+    </section>    
+    <div class="row">  
+      {% for modelo, productos in productos_por_modelo.items() %}
+
+        <div class="col-4"> 
+          <div class="card mb-4">
+            <div class="card-body" style="box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3)" id="{{modelo}}">            
+                {%  if modelo == otrosAtributos[loop.index-1].modelo%}            
+                  <img class="card-img-top" src="{{ url_for('static', filename='img/' + otrosAtributos[loop.index-1].imagen) }}" alt="Card image cap" height="350">
+                  <p class="card-text h4" style="display: table; text-align: center;">{{otrosAtributos[loop.index-1].nombre}}</p>
+                  <p class="card-text h5" style="display: table;">Precio: ${{otrosAtributos[loop.index-1].precio}}</p>
+                  <p class="card-text h5" style="display: none;">Descripción: {{otrosAtributos[loop.index-1].descripcion}}</p>
+                  <p class="card-text h5" style="display: none;">                                              
+                  </p>            
+                <h5 class="card-text h5" style="display: table;">Modelo : {{ modelo }}</h5>
+                {% endif %}      
+                <form method="post" action="{{ url_for('main.verModelos', modelo = modelo) }}">
+                  <button type="submit" class="btn btn-success">Ver modelos</button>
+                </form>
+                </div>
+              </div>
+          </div>
+        {% endfor %}
+      
+    
+      </div>
+  </div>
+  </div>
+</section>
+
+
+
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4" id="enviosGratis">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title text-danger">Envío gratis</h3>
+            <h6 class="card-subtitle mb-2 text-muted">En todos nuestros productos.</h6>
+            <p class="card-text">Realiza tus compras sin preocupaciones y recibe tus productos en la comodidad de tu hogar.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4" id="CambiosSinCosto">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title text-info">Cambios sin costo</h3>
+            <h6 class="card-subtitle mb-2 text-muted">Si algo no te queda bien, lo cambiamos sin costo.</h6>
+            <p class="card-text">Queremos que te sientas cómodo y seguro con tus compras, por lo que ofrecemos cambios sin costo adicional.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4" id="productosCalidad">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title text-success">Productos de calidad</h3>
+            <h6 class="card-subtitle mb-2 text-muted">Nos aseguramos de ofrecer solo lo mejor.</h6>
+            <p class="card-text">Cada uno de nuestros productos es seleccionado cuidadosamente para garantizar calidad y satisfacción en cada compra.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+</section>
+
+
+<script>
+
+  var posicionDeseada = 1300; // Cambia este valor al número de píxeles que deseas que esté en el centro
+
+  // Utiliza el método scrollTo para mover la ventana a la posición deseada
+  window.scrollTo({
+    top: posicionDeseada,
+    behavior: 'smooth' // Agrega este comportamiento para una animación suave
+  });
+
+  let moreInfoBtns = document.querySelectorAll('.more-info-btn');
+
+  moreInfoBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+          let moreInfoDiv = btn.nextElementSibling;
+          if (moreInfoDiv.style.display === 'none') {
+              moreInfoDiv.style.display = 'block';
+          } else {
+              moreInfoDiv.style.display = 'none';
+          }
+      });
+  });
+  function formFlitros(nombre){
+    if (nombre == 'btnTrajes'){
+      var idSeleccionado = 'Traje';
+    }
+    else if (nombre == 'btnCamisas'){
+      var idSeleccionado = 'Camisa';
+    }
+    else if (nombre == 'btnSacos'){
+      var idSeleccionado = 'Saco';
+    }
+    else if (nombre == 'btnPantalones'){
+      var idSeleccionado = 'Pantalones';
+    }
+    else if (nombre == 'btnCorbatas'){
+      var idSeleccionado = 'Corbata';
+    }
+    var url = "{{ url_for('main.filtrarProducto', nombre ='') }}" + idSeleccionado;
+    document.getElementById('filtrosForm').setAttribute('method', 'POST');
+    document.getElementById('filtrosForm').setAttribute('action', url);
+    document.getElementById('filtrosForm').submit();
+
+}
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container my-4">
+    <div class="button-group"><button class="float-right btn btn-info" onclick="setDetalleVisible(true);"
+        title="materiales utilizados"><i class="fa-solid fa-list fa-beat"></i></button>
+    </div>
+    <div class="button-group">
+        <button class="float-right btn btn-info" onclick="setDetalleVisible(false);"
+        title="Ocultar materiales"><i class="fa-regular fa-eye-slash fa-fade"></i> </button>
+    </div>
+
+    <div class="row">
+        
+        <div class="col-md-4">
+            
+            <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" class="img-fluid"
+                alt="{{ producto.nombre }}">
+        </div>
+        <div class="col-md-8" id="stock">
+            <h1>{{ producto.nombre }}</h1>
+            <p>{{ producto.descripcion }}</p>
+
+            <form method="post" action="{{ url_for('administrador.actualizarStock', id=producto.id) }}">
+                <div class="form-group form-inline">
+                    <div>
+                        <label for="cantidadAct">Cantidad de stock actual:</label>
+                        <input type="number" class="form-control" id="cantidadAct" name="cantidadAct" min="1" 
+                        value="{{producto.stock_existencia}}" required readonly>
+                    </div>
+                    <div>
+                        <label for="cantidad">Cantidad de stock a agregar:</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" min="1"  required>
+                    </div>
+                </div>
+                
+                
+                <button type="submit" class="btn btn-primary">Agregar Stock</button>
+            
+        </div>
+        <div class="col-md-4 order-md-2" id="mat" style="display: none;">
+            <div class="form-check-group">
+                <label for="materiales" class="form__label">Materiales utilizados:</label>
+                <div class="scrollbar scrollbar-primary">
+                    <div class="force-overflow">
+                        {% for material in materiales %}
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input" type="checkbox" id="material_{{ material.id }}"
+                                        name="materiales" value="{{ material.id }}" class="form__field" {% if
+                                        material.id in cantidades %}checked{% endif %}>
+                                    <label class="form-check-label" for="material_{{ material.id }}">{{ material.nombre
+                                        }}</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form__group">
+                                    <input type="number" class="form__field" id="cantidad_{{ material.id }}"
+                                        name="cantidad_usada[]" placeholder="Cantidad" step="0.5" min="0"
+                                        value="{% if material.id in cantidades %}{{ cantidades[material.id] }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -5,63 +5,121 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
+{% if category == 'error' %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{% elif category == 'success' %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
     {{ message }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+        <span aria-hidden="true">×</span>
     </button>
 </div>
+{% elif category == 'warning' %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{% endif %}
 {% endfor %}
 <script>
     // Agregar controlador de eventos click al botón "Cerrar"
-    document.querySelector('.alert button.close').addEventListener('click', function(event) {
+    document.querySelector('.alert button.close').addEventListener('click', function (event) {
         event.preventDefault();
         this.parentNode.style.display = 'none';
     });
 </script>
+
 {% endif %}
 {% endwith %}
-
 {% if current_user.admin %}
-<section class="section">
-    <div class="container">
-        <h3 class="title has-text-black has-text-centered">Ropa en Stock</h3>
-        <div class="column is-one-third">
-            <a class="btn btn-primary btn-block" href="administrador">
-                <span>Agregar Nuevo <i class="fas fa-tshirt"></i></span>
-            </a>
-        </div>
-        <div class="row">
-            {% for produc in productos %}
-            <div class="col-md-3 mb-3">
-                <div class="card">
-                    <img src="{{ url_for('static', filename='img/' + produc.image) }}" class="card-img-top" alt="" style="object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">{{produc.nombre}}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">{{produc.estilo}}</h6>
-                        <p class="card-text">${{produc.precio}}</p>
-                        <button class="btn btn-primary btn-sm more-info-btn">Ver más</button>
-                        <div class="more-info" style="display: none;">
-                            <p>{{produc.descripcion}}</p>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <a href="modificar?id={{produc.id}}" class="card-link">Editar</a>
-                        <a href="eliminar?id={{produc.id}}" class="card-link">Eliminar</a>
-                    </div>
-                </div>
-            </div>
-            {% if loop.index % 4 == 0 %}
-        </div>
-        <div class="row">
-            {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
+{% if productos==0%}
+<h3>No hay productos para mostrar</h3>
+<a type="button" class="button" href="administrador">
+    <span class="button__text">Agregar Prenda</span>
+    <span class="button__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke-width="2" stroke-linejoin="round"
+            stroke-linecap="round" stroke="currentColor" height="24" fill="none" class="svg">
+            <line y2="19" y1="5" x2="12" x1="12"></line>
+            <line y2="12" y1="12" x2="19" x1="5"></line>
+        </svg>
+    </span>
+</a><br>
 {% else %}
+<section class="section">
+    <div class="container">
+        <h3 class="title has-text-black has-text-centered">Ropa en Stock</h3>
+        <a type="button" class="button" href="administrador">
+            <span class="button__text">Agregar Prenda</span>
+            <span class="button__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke-width="2"
+                    stroke-linejoin="round" stroke-linecap="round" stroke="currentColor" height="24" fill="none"
+                    class="svg">
+                    <line y2="19" y1="5" x2="12" x1="12"></line>
+                    <line y2="12" y1="12" x2="19" x1="5"></line>
+                </svg>
+            </span>
+        </a><br>
+        <div class="row">
+            <table class="table anyClass">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Talla</th>
+                        <th>Color</th>
+                        <th>Descripción</th>
+                        <th>Cantidad en Stock</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produc in productos %}
+                    <tr>
+                        <td>
+                            <img src="{{ url_for('static', filename='img/' + produc.imagen) }}" class="product-img">
+                        </td>
+                        <td>{{ produc.nombre }}</td>
+                        <td>${{ produc.precio }}</td>
+                        <td>{{ produc.talla }}</td>
+                        <td>{{ produc.color }}</td>
+                        <td>{{ produc.descripcion }}</td>
+                        <td>{{ produc.stock_existencia|int}}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <div>
+                                    <a href="actualizarStock?id={{ produc.id }}" class="btn btn-primary btn-sm"
+                                        title="actualizar el stock" ><i class="fa-solid fa-circle-plus"></i></a>
+                                </div>
+                                <div>
+                                    <a href="modificar?id={{ produc.id }}" class="btn btn-info btn-sm"
+                                        title="Modificar"><i class="fa-solid fa-pencil"></i></a>
+                                </div>
+                                <div>
+                                    <a href="eliminar?id={{ produc.id }}" title="Eliminar" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash-can"></i></a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
+{% endif %}
+{% else %}
+{% if productos==0%}
+<h3>No hay productos para mostrar</h3>
+{% else %}
 <section class="section">
     <div class="container">
         <h3 class="title has-text-black has-text-centered">Ropa en Stock</h3>
@@ -69,19 +127,26 @@
             {% for produc in productos %}
             <div class="col-md-3 mb-3">
                 <div class="card">
-                    <img src="{{ url_for('static', filename='img/' + produc.image) }}" class="card-img-top" alt="" style="object-fit: cover;">
+                    <img src="{{ url_for('static', filename='img/' + produc.imagen) }}" class="card-img-top" alt=""
+                        style="object-fit: cover;">
                     <div class="card-body">
                         <h5 class="card-title">{{produc.nombre}}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">{{produc.estilo}}</h6>
-                        <p class="card-text">${{produc.precio}}</p>
-                        <button class="btn btn-primary btn-sm more-info-btn">Ver más</button>
+                        <h6 class="card-text">${{produc.precio}}</h6>
+
+                        <button class="btn btn-info btn-sm more-info-btn">Ver más</button>
                         <div class="more-info" style="display: none;">
+                            <p class="card-text">Talla:{{produc.talla}}</p>
+                            <p class="card-text">Color: {{produc.color}}</p>
                             <p>{{produc.descripcion}}</p>
+
                         </div>
-                        <button class="btn btn-success btn-sm more-info-btn"><i class="fas fa-cart-plus"></i> Agregar al carrito</button>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-success btn-sm more-info-btn"><i class="fas fa-cart-plus"></i> Agregar al
+                            carrito</button>
                     </div>
                     <div class="card-footer">
-                       Urban Mode
+                        Sartorial
                     </div>
                 </div>
             </div>
@@ -93,6 +158,7 @@
         </div>
     </div>
 </section>
+{% endif %}
 {% endif %}
 <script>
     let moreInfoBtns = document.querySelectorAll('.more-info-btn');

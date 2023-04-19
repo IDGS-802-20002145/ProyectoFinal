@@ -1,0 +1,123 @@
+<!-- finanzas.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="charts-container">
+    <div class="chart-container">
+        <h1><i class="fa-sharp fa-solid fa-hand-holding-dollar" style="color: #000000;"></i> Ventas totales por mes</h1>
+        <canvas id="ventas-chart" width="800" height="400"></canvas>
+        <script>
+            var ventasData = {
+                labels: [{% for venta in ventas_por_mes %}"{{ venta.mes }}", {% endfor %}],
+            datasets: [{
+                label: 'Ventas por mes',
+                data: [{% for venta in ventas_por_mes %}{{ venta.total }}, {% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                        borderWidth: 1
+            }]
+        };
+
+            var ventasOptions = {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            };
+
+            var ventasChart = new Chart(document.getElementById('ventas-chart'), {
+                type: 'bar',
+                data: ventasData,
+                options: ventasOptions
+            });
+        </script>
+    </div>
+
+
+
+
+    <div class="chart-container">
+        <h1><i class="fa-sharp fa-solid fa-hand-holding-dollar" style="color: #000000;"></i> Compras totales por mes
+        </h1>
+        <canvas id="compras-chart" width="800" height="400"></canvas>
+        <script>
+            var comprasData = {
+                labels: [{% for compra in compras_por_mes %}"{{ compra.mes }}", {% endfor %}],
+            datasets: [{
+                label: 'Compras por mes',
+                data: [{% for compra in compras_por_mes %}{{ compra.total }}, {% endfor %}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)'
+                ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                        borderWidth: 1
+            }]
+        };
+
+            var comprasOptions = {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            };
+
+            var comprasChart = new Chart(document.getElementById('compras-chart'), {
+                type: 'bar',
+                data: comprasData,
+                options: comprasOptions
+            });
+        </script>
+    </div>
+</div>
+
+
+<style>
+    .charts-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .chart-container {
+        width: calc(50% - 10px);
+        max-width: 800px;
+    }
+
+    @media only screen and (max-width: 768px) {
+        .chart-container {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

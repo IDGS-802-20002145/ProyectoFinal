@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Productos -->
+<div class="container">
+    <h2 class="text-center my-4">Productos del modelo : <b><label id="titulo">{{productos[0].modelo}}</label></b></h2>
+    <div class="row">  
+      {% for producto in productos %}
+     
+        <div class="col-4"> 
+          <div class="card mb-4">
+            <div class="card-body" style="box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3)" id="{{producto.id}}">                                  
+                <img class="card-img-top" src="{{ url_for('static', filename='img/' + producto.imagen) }}" alt="Card image cap" height="350">                  
+                <p class="card-text h4" style="display: table; text-align: center;">{{producto.nombre}}</p>
+                <p class="card-text h5" style="display: table;">Precio: ${{producto.precio}}</p>
+                <p class="card-text h5" style="display: table;">Color: {{producto.color}}</p>
+                <form method="post" action="{{ url_for('main.verProducto', modelo = producto.modelo, color = producto.color) }}">
+                <button class="btn btn-dark full-width btn-block">Ver tallas</button>    
+                </form>
+            </div>
+        </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

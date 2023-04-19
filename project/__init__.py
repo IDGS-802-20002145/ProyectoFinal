@@ -16,7 +16,7 @@ def create_app():
     #Configuraciones necesarias 
     app.config['SQLAlchemy_TRACK_MODIFICATIONS']= False
     app.config['SECRET_KEY'] =  os.urandom(24)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@127.0.0.1/urbanMode'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@127.0.0.1:3310/sartorial'
     app.config['SECURITY_PASSWORD_HASH'] =  'pbkdf2_sha512'
     app.config['SECURITY_PASSWORD_SALT'] =  'secretsalt'
     app.config['UPLOAD_FOLDER'] = '/static/img'
@@ -32,9 +32,17 @@ def create_app():
 
     
 
-    #Registramos 2 blueprints
+    #Registramos los blueprints
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
+
+
+    from .Administrador.routes import  administrador  as admin_blueprint
+    app.register_blueprint(admin_blueprint)
+
+    from .Cliente.routes import cliente as cliente_blueprint
+    app.register_blueprint(cliente_blueprint)
+
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)

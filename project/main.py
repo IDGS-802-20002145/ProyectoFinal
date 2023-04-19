@@ -4,7 +4,8 @@ from flask import Blueprint, render_template, flash, redirect, request, url_for,
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
 from . import db
-from project.models import Products, Role
+from sqlalchemy import and_, func, text
+from project.models import Role, Producto
 from werkzeug.utils import secure_filename
 import logging
 from logging.handlers import RotatingFileHandler
@@ -24,121 +25,101 @@ logger.addHandler(handler)
 def index():
     fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     logger.info('Se inicio la aplicación'+ ' el dia '+ fecha_actual)
-    return render_template('index.html')
-
-# Definimos la ruta para la página de perfil de usuairo
-
-
-@main.route('/administrador')
-@login_required
-@roles_required('admin')
-def admin():
-    productos = Products.query.all()
-    return render_template('RopaCrud.html', productos=productos)
-
-
-@main.route('/administrador', methods=['POST'])
-@login_required
-@roles_required('admin')
-def admin_post():
-    img=str(uuid.uuid4())+'.png'
-    imagen=request.files['image']
-    ruta_imagen = os.path.abspath('project\\static\\img')
-    imagen.save(os.path.join(ruta_imagen,img))       
-    alum=Products(nombre=request.form.get('txtNombre'),
-                    descripcion=request.form.get('txtDescripcion'),
-                    estilo=request.form.get('txtEstilo'),
-                    precio=request.form.get('txtPrecio'),
-                    image=img)
-        #Con esta instruccion guardamos los datos en la bd
-    db.session.add(alum)
-    db.session.commit()
-    flash("El registro se ha guardado exitosamente.", "exito")
-    return redirect(url_for('main.principalAd'))
+    prod = Producto.query.filter(Producto.estatus == 1).all()
+    modelos = db.session.query(Producto.modelo).distinct().all()
+    otrosAtributos = db.session.query(
+        Producto.modelo,
+        func.max(Producto.imagen).label('imagen'),  # Utiliza func.max() para obtener la imagen
+        func.max(Producto.nombre).label('nombre'),  # Utiliza func.max() para obtener el nombre
+        func.max(Producto.precio).label('precio'),  # Utiliza func.max() para obtener el precio
+        func.max(Producto.color).label('color'),  # Utiliza func.max() para obtener el color
+        func.max(Producto.descripcion).label('descripcion'),  # Utiliza func.max() para obtener la descripción
+        func.max(Producto.stock_existencia).label('stock_existencia'),  # Utiliza func.max() para obtener el stock_existencia
+        func.max(Producto.estatus).label('estatus')  # Utiliza func.max() para obtener el estatus
+    ).group_by(Producto.modelo).all()
     
+    print(otrosAtributos)
+    productos_por_modelo = {}
+    
+    for modelo in modelos:
+        productos_por_modelo[modelo[0]] = []
 
-@main.route('/modificar', methods=['GET', 'POST'])
-@login_required
-def modificar():
-    if request.method == 'GET':
-        id = request.args.get('id')
-        producto = Products.query.get(id)
-        print(producto)
-        if producto is None:
-            flash("El pzroducto no existe", "error")
-            return redirect(url_for('main.admin'))
-        if not producto.image:
-            producto.image = 'default.png' # o cualquier otro valor predeterminado para la imagen
-        return render_template('modificar.html', producto=producto,id=id)
-    elif request.method == 'POST':
-        id = request.args.get('id')
-        producto = Products.query.get(id)
-        print(producto)
-        if producto is None:
-            flash("El producto no existe", "error")
-            return redirect(url_for('main.admin'))
-        producto.nombre = request.form.get('txtNombre')
-        producto.estilo = request.form.get('txtEstilo')
-        producto.descripcion = request.form.get('txtDescripcion')
-        producto.precio = request.form.get('txtPrecio')
-        imagen = request.files.get('image')
-        ruta_imagen = os.path.abspath('project\\static\\img')
-        if imagen:
-            # Eliminar la imagen anterior
-            os.remove(os.path.join(ruta_imagen, producto.image))
-            # Guardar la nueva imagen
-            filename = secure_filename(imagen.filename)
-            imagen.save(os.path.join(ruta_imagen, filename))
-            producto.image = filename
-        db.session.commit()
-        flash("El registro se ha modificado exitosamente.", "exito")
-        return redirect(url_for('main.principalAd'))
+    for producto in prod:
+        modelo = producto.modelo
+        productos_por_modelo[modelo].append({
+            'id': producto.id,
+            'nombre': producto.nombre,
+            'descripcion': producto.descripcion,
+            'precio': producto.precio,
+            'tallas': producto.talla,
+            'stock_existencia': producto.stock_existencia
+        })
 
-@main.route('/eliminar', methods=['GET', 'POST'])
-@login_required
-def eliminar():
-    if request.method == 'GET':
-        id = request.args.get('id')
-        producto = Products.query.get(id)
-        print(producto)
-        if producto is None:
-            flash("El producto no existe", "error")
-            return redirect(url_for('main.admin'))
-        if not producto.image:
-            producto.image = 'default.png' # o cualquier otro valor predeterminado para la imagen
-        return render_template('eliminar.html', producto=producto,id=id)
-    elif request.method == 'POST':
-        id = request.args.get('id')
-        producto = Products.query.get(id)
-        print(producto)
-        if producto is None:
-            flash("El producto no existe", "error")
-            return redirect(url_for('main.admin'))
-        producto.nombre = request.form.get('txtNombre')
-        producto.estilo = request.form.get('txtEstilo')
-        producto.descripcion = request.form.get('txtDescripcion')
-        producto.precio = request.form.get('txtPrecio')
-        imagen = request.files.get('image')
-        ruta_imagen = os.path.abspath('project\\static\\img')
-        if imagen:
-            # Eliminar la imagen anterior
-            os.remove(os.path.join(ruta_imagen, producto.image))
-            # Guardar la nueva imagen
-            filename = secure_filename(imagen.filename)
-            imagen.save(os.path.join(ruta_imagen, filename))
-            producto.image = filename
-        db.session.delete(producto)
-        db.session.commit()
-        flash("El registro se ha eliminado exitosamente.", "exito")
-        return redirect(url_for('main.principalAd'))
+    return render_template('index.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos, prod = prod)
+
+@main.route('/filtrarProducto',methods=["GET","POST"])
+def filtrarProducto():    
+    if request.method == 'POST':   
+        nombre = request.args.get('nombre')
+        prod2 = Producto.query.filter(Producto.estatus == 1).all()
+        prod = Producto.query.filter(and_(Producto.estatus == 1),
+                                     (Producto.nombre.ilike(f"%{nombre}%"))).all()
+        modelos = db.session.query(
+            Producto.modelo).filter(Producto.nombre.ilike(f"%{nombre}%")).distinct().all()
+        print(modelos)
+        otrosAtributos = db.session.query(
+            Producto.modelo,
+            func.max(Producto.imagen).label('imagen'),  # Utiliza func.max() para obtener la imagen
+            func.max(Producto.nombre).label('nombre'),  # Utiliza func.max() para obtener el nombre
+            func.max(Producto.precio).label('precio'),  # Utiliza func.max() para obtener el precio
+            func.max(Producto.color).label('color'),  # Utiliza func.max() para obtener el color
+            func.max(Producto.descripcion).label('descripcion'),  # Utiliza func.max() para obtener la descripción
+            func.max(Producto.stock_existencia).label('stock_existencia'),  # Utiliza func.max() para obtener el stock_existencia
+            func.max(Producto.estatus).label('estatus')  # Utiliza func.max() para obtener el estatus
+        ).filter(Producto.nombre.ilike(f"%{nombre}%")).group_by(Producto.modelo).all()
+        
+        print(otrosAtributos)
+        productos_por_modelo = {}
+        
+        for modelo in modelos:
+            productos_por_modelo[modelo[0]] = []
+
+        for producto in prod:
+            modelo = producto.modelo
+            productos_por_modelo[modelo].append({
+                'id': producto.id,
+                'nombre': producto.nombre,
+                'descripcion': producto.descripcion,
+                'precio': producto.precio,
+                'tallas': producto.talla,
+                'stock_existencia': producto.stock_existencia
+            })
+    return render_template('index_filtro.html', productos_por_modelo = productos_por_modelo, otrosAtributos = otrosAtributos,)
 
 
+@main.route('/verProducto',methods=["GET","POST"])
+def verProducto():
+    if request.method == 'POST':
+
+        prods = Producto.query.filter(and_(Producto.modelo == request.args.get('modelo'), 
+                                    Producto.color == request.args.get('color'))).all()
+
+        print(request.args.get('modelo'), request.args.get('color'))
+        color = request.args.get('color')
+        return render_template('productoDetalle.html', productos = prods, color = color)
+
+@main.route('/verModelos',methods=["GET","POST"])
+def verModelos():
+        prods = Producto.query.filter(Producto.modelo == request.args.get('modelo')).distinct(Producto.color).all()
+
+               
+        return render_template('catalogoPorModelo.html', productos = prods)
 
 @main.route('/principalAd',methods=["GET","POST"])
 @login_required
 def principalAd():
-    productos = Products.query.all()
-
+    productos = Producto.query.filter_by(estatus=1).all()
+    
     if len(productos) == 0:
         productos = 0
 

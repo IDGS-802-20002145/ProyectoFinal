@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}" role="alert">
+  {{ message }}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+
+{% if detProductos ==  []%}
+
+<h1>No hay productos en el carrito</h1>
+<a href="catalogoC">Presiona aquí para seleccionar productos</a>
+
+{% else %}
+
+<h1>Confirmación de Pago</h1>
+
+
+{% for producto in detProductos %}
+<div class="producto">
+    <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" alt="">
+    <h2>{{ producto.nombre }}</h2>
+    <p>{{ producto.descripcion }}</p>
+    <p>Precio: ${{ producto.precio }}</p>
+    <p>Cantidad: {{ producto.cantidad }}</p>
+
+</div>
+{% endfor %}
+<h3>El total es ${{ total }}</h3>
+
+<form method="post" action="/pagar_todo">
+    <div>
+        <label for="metodo_pago">Seleccione método de pago:</label>
+        <select id="metodo_pago" name="metodo_pago">
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta</option>
+        </select>
+    </div>
+    <div>
+        <input type="hidden" name="id" value="{{ id }}">
+        <button type="submit">Continuar</button>
+    </div>
+</form>
+
+{% endif %}
+
+
+{% endblock %}

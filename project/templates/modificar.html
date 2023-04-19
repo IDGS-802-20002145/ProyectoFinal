@@ -1,76 +1,83 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="hero">
+<link rel="stylesheet" href="../static/css/modificar.css">
+
+<sectio>
     <div class="hero-body">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-md-6">
+                <div class="col-lg-12 order-md-1">
                     <div class="card">
                         <h2 class="card-header">Vista Prenda</h2>
-                        <form name="sent" action="{{ url_for('main.modificar', id=producto.id) }}" id="from1"
+                        <form name="sent" action="{{ url_for('administrador.modificar', id=producto.id) }}" id="from1"
                             method="POST" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label class="col-form-label">ID de la prenda:</label>
-                                <div class="input-group">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="id">ID de la prenda:</label>
                                     <input class="form-control" value="{{producto.id}}" name="txtId" type="text"
-                                        placeholder="" disabled>
+                                        placeholder="" readonly>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-form-label">Nombre de la prenda:</label>
-                                <div class="input-group">
-                                    <input class="form-control" value="{{producto.nombre}}" name="txtNombre" type="text"
-                                        placeholder="Ingresa el nombre de la prenda">
+                                <div class="form-group col-md-4">
+                                    <label for="nombre">Nombre del producto:</label>
+                                    <input placeholder="Nombre" name="nombre" value="{{producto.nombre}}" type="text"
+                                        class="form-control" required="">
                                 </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-form-label">Estilo:</label>
-                                <div class="input-group">
-                                    <input class="form-control" value="{{producto.estilo}}" name="txtEstilo" type="text"
-                                        placeholder="Ingresa el estilo de la prenda">
+                                <div class="form-group col-md-4">
+                                    <label for="modelo">Modelo:</label>
+                                    <input type="text" class="form-control" id="modelo" name="modelo"
+                                        value="{{producto.modelo}}" required>
                                 </div>
                             </div>
 
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="descripcion">Descripción:</label>
+                                    <textarea class="form-control" id="descripcion" name="descripcion"
+                                        rows="3">{{producto.descripcion}}</textarea>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="talla">Talla:</label>
+                                    <input type="text" class="form-control" id="talla" name="talla"
+                                        value="{{producto.talla}}" readonly>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="color">Color:</label>
+                                    <input type="text" class="form-control" id="color" name="color"
+                                        value="{{producto.color}}" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+
+                                <div class="form-group col-md-6">
+                                    <label for="precio">Precio:</label>
+                                    <input type="number" class="form-control" id="precio" name="precio"
+                                        value="{{producto.precio}}" step="0.01" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="precio">Stock en Existencia:</label>
+                                    <input type="number" class="form-control" id="stock" name="stock"
+                                        value="{{producto.stock_existencia}}" required readonly>
+                                </div>
+                            </div>
+                            
                             <div class="form-group">
-                                <label class="col-form-label">Descripción:</label>
-                                <div class="input-group">
-                                    <textarea class="form-control" name="txtDescripcion"
-                                        placeholder="Ingresa la descripción de la prenda">{{producto.descripcion}}</textarea>
-                                </div>
+                                <label for="imagen">Imagen:</label><br>
+                                <img src="{{ url_for('static', filename='img/' + producto.imagen) }}" alt="Imagen"
+                                    width="150px" height="150px"><br>
+                                <input type="file" class="" id="imagen" name="imagen" value="{{producto.imagen}}">
                             </div>
-                            <div class="form-group">
-                                <label class="col-form-label">Precio:</label>
-                                <div class="input-group">
-                                    <input class="form-control" value="{{producto.precio}}" name="txtPrecio"
-                                        type="number" placeholder="Ingresa el precio de la prenda">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-form-label">Imagen</label>
-                                <div class="custom-file">
-                                    <img name="img" src="{{ url_for('static', filename='img/' + producto.image) }}"
-                                        width="150px" height="190px" alt="">
-                                    
-                                </div>
-                            </div>
-                            <br>
-                            <div class="form-group ">
-                                <div class="custom-file">
-                                    <label class="custom-file-label">Elija un archivo…</label>
-                                    <input type="file" class="custom-file-input" name="image">
-                                </div>
-                            </div>
-                           
+                            
                             <div class="form-group text-center">
-                                <button class="btn btn-success" name="modificar">Modificar</button>
-                                <a href="principalAd" class="btn btn-warning"><i
+                                <button class="btn btn-success mr-2" name="modificar">Modificar</button>
+                                <a href="{{ url_for('main.principalAd') }}" class="btn btn-warning"><i
                                         class="icon-action-undo"></i>Cancelar</a>
                             </div>
-                        </form>
+                    
                     </div>
                 </div>
+            </form>
             </div>
         </div>
     </div>

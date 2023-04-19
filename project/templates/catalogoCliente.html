@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="4000">
+    <ol class="carousel-indicators">
+      <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+    </ol>
+    <div class="carousel-inner">
+      <div class="carousel-item active slide1">
+        <img class="d-block w-100"  src="./static/img/SartorialBanner.png" alt="First slide">
+      </div>
+      <div class="carousel-item slide2">
+        <img class="d-block w-100" src="./static/img/SartorialBanner2.png" alt="Second slide">
+      </div>
+      <div class="carousel-item slide3">
+        <img class="d-block w-100" src="./static/img/SartorialBanner3.png" alt="Third slide">
+      </div>
+    </div>
+    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+  </div>
+<style>
+    .slide1 {
+  animation-name: slide1;
+  animation-duration: 0.8s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+}
+
+.slide2 {
+  animation-name: slide2;
+  animation-duration: 0.8s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+}
+
+.slide3 {
+  animation-name: slide3;
+  animation-duration: 0.8s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+}
+
+@keyframes slide1 {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0%);
+  }
+}
+
+@keyframes slide2 {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0%);
+  }
+}
+
+@keyframes slide3 {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0%);
+  }
+}
+
+</style>
+
+<!-- Productos -->
+<div class="container">
+  <h1 class="text-center my-4">Productos Destacados</h1>
+  <p>Estos son algunos de nuestros productos más populares:</p>
+  <section class="text-left"><b>Filtrar por:</b>  
+    <form id="filtrosForm" method="POST" action="{{ url_for('main.filtrarProducto')}}">      
+    <button type="submit" id="btnTrajes" onclick="formFlitros('btnTrajes')" class="btn btn-info">Trajes</button>
+    <button type="submit" id="btnCamisas" onclick="formFlitros('btnCamisas')" class="btn btn-info">Camisas</button>
+    <button type="submit" id="btnSacos" onclick="formFlitros('btnSacos')" class="btn btn-info">Sacos</button>
+    <button type="submit" id="btnPantalones" onclick="formFlitros('btnPantalones')" class="btn btn-info">Pantalones</button>
+    <button type="submit" id="btnCorbatas" onclick="formFlitros('btnCorbatas')" class="btn btn-info my-2">Corbartas</button>
+  </form>
+  <a href="{{ url_for('cliente.catalogoC') }}" class="btn btn-info my-2">Todos</a>
+  </section>    
+  <div class="row">  
+    {% for modelo, productos in productos_por_modelo.items() %}
+    {% if otrosAtributos[loop.index-1].estatus == 1 %}
+      <div class="col-4"> 
+        <div class="card mb-4">
+          <div class="card-body" style="box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3)" id="{{modelo}}">            
+              {%  if modelo == otrosAtributos[loop.index-1].modelo%}            
+                <img class="card-img-top" src="{{ url_for('static', filename='img/' + otrosAtributos[loop.index-1].imagen) }}" alt="Card image cap" height="350">
+                <p class="card-text h4" style="display: table; text-align: center;">{{otrosAtributos[loop.index-1].nombre}}</p>
+                <p class="card-text h5" style="display: table;">Precio: ${{otrosAtributos[loop.index-1].precio}}</p>
+                <p class="card-text h5" style="display: none;">Descripción: {{otrosAtributos[loop.index-1].descripcion}}</p>
+                <p class="card-text h5" style="display: none;">                                              
+                </p>            
+              <h5 class="card-text h5" style="display: table;">Modelo : {{ modelo }}</h5>
+              {% endif %}      
+              <form method="post" action="{{ url_for('main.verModelos', modelo = modelo) }}">
+                <button type="submit" class="btn btn-success">Ver modelos</button>
+              </form>
+              </div>
+            </div>
+        </div>
+        {%endif%} 
+      {% endfor %}
+    
+  
+    </div>
+  </div>
+</div>
+</div>
+<script>
+  function verMas(id){          
+    var cardBody = document.getElementById(id);
+    var cardText = cardBody.getElementsByClassName("card-text");
+    for (var i = 0; i < cardText.length; i++) {
+      cardText[i].style.display = "table";     
+    }
+  }
+  function detalleProducto(idForm){
+    var radioButtons = document.getElementsByName('tallaProducto');
+    var selectedRadioButton = null;
+    // Itera sobre todos los radio buttons y encuentra el seleccionado
+    for (var i = 0; i < radioButtons.length; i++) {
+      if (radioButtons[i].checked) {
+        selectedRadioButton = radioButtons[i];
+        break;
+      }
+    }
+    // Actualiza el valor del atributo "action" del formulario
+    if (selectedRadioButton !== null) {
+      var idSeleccionado = selectedRadioButton.value;
+      
+      var url = "{{ url_for('main.verProducto', id='') }}" + idSeleccionado;
+      
+      document.getElementById(idForm).setAttribute('method', 'POST');
+      document.getElementById(idForm).setAttribute('action', url);
+  }
+  }
+  function cantCarrito(modelo){
+    //alert(modelo)
+    var cantCarrito = document.getElementById("txtCantCar"+modelo);
+    var btnCarrito = document.getElementById("addCart"+modelo);
+    var btnCarrito0 = document.getElementById("btnAddCart"+modelo);
+  
+    cantCarrito.style.display = "inline";
+    btnCarrito.style.display = "inline";
+    btnCarrito0.style.display = "none";
+  }
+  
+  function actualizarFormulario(idForm) {
+  
+    var radioButtons = document.getElementsByName('tallaProducto');
+    var selectedRadioButton = null;
+    
+    // Itera sobre todos los radio buttons y encuentra el seleccionado
+    for (var i = 0; i < radioButtons.length; i++) {
+      if (radioButtons[i].checked) {
+        selectedRadioButton = radioButtons[i];
+        break;
+      }
+    }
+    // Actualiza el valor del atributo "action" del formulario
+    if (selectedRadioButton !== null) {
+      var idSeleccionado = selectedRadioButton.value;
+  
+      var url = "{{ url_for('cliente.pedidos', idProducto='') }}" + idSeleccionado;
+  
+      document.getElementById(idForm).setAttribute('method', 'POST');
+      document.getElementById(idForm).setAttribute('action', url);
+    }
+  }
+    function formFlitros(nombre){
+      if (nombre == 'btnTrajes'){
+        var idSeleccionado = 'Traje';
+      }
+      else if (nombre == 'btnCamisas'){
+        var idSeleccionado = 'Camisa';
+      }
+      else if (nombre == 'btnSacos'){
+        var idSeleccionado = 'Saco';
+      }
+      else if (nombre == 'btnPantalones'){
+        var idSeleccionado = 'Pantalones';
+      }
+      else if (nombre == 'btnCorbatas'){
+        var idSeleccionado = 'Corbata';
+      }
+      var url = "{{ url_for('main.filtrarProducto', nombre ='') }}" + idSeleccionado;
+      document.getElementById('filtrosForm').setAttribute('method', 'POST');
+      document.getElementById('filtrosForm').setAttribute('action', url);
+      document.getElementById('filtrosForm').submit();
+  
+  }
+  
+    </script>
+{% endblock%}

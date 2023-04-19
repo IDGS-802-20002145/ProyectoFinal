@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <h3 class="my-10">Registrar Proveedor</h3>
+        <br>
+        <br>
+        <form name="sent" action="/insertar_prov" id="from1" method="POST">
+            <div class="row control-group">
+                <div class="from-group col-xs-12 float-label-from-group controls">
+                    <input type="text" name="txtNombre" id="txtNombre" class="form-control" placeholder="Nombre">
+                </div>
+            </div>
+            <div class="row control-group">
+                <div class="form-group col-xs-12 float-label-from-group controls">
+                   <input type="email" name="txtEmail" id="txtEmail" class="form-control" placeholder="Correo">
+                </div>
+            </div>
+            <div class="row control-group">
+                <div class="form-group col-xs-12 float-label-from-group controls">
+                   <input type="text" name="txtTelefono" id="txtTelefono" class="form-control" placeholder="Telefono">
+                </div>
+            </div>
+            <div class="row control-group">
+                <div class="form-group col-xs-12 float-label-from-group controls">
+                   <input type="text" name="txtDireccion" id="txtDireccion" class="form-control" placeholder="Dirección">
+                </div>
+            </div>
+            <input type="submit" id="reg-alum" name="registra" value="Registrar">
+        </form>
+    </div>
+</div>
+
+{% endblock %}

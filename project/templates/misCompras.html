@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="../static/css/misCompras.css">
+
+<div class="container my-3">
+    <div class="row">
+        <div class="col-12 mb-4 text-center">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-truck"></i> Compras en camino</h5>
+                    <p class="card-text">Revisa el estado de tus compras que ya están en camino</p>
+                    <button id="btn-en-camino" class="btn btn-primary">Ver compras en camino</button>
+                </div>
+            </div>
+
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-shopping-bag"></i> Compras pendientes</h5>
+                    <p class="card-text">Revisa tus compras pendientes de envío</p>
+                    <button id="btn-pendientes" class="btn btn-primary">Ver compras pendientes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="container ventas">
+    <h1 class="text-center mt-5 mb-4"><i class="fas fa-shopping-bag"></i> Pendientes de Envío</h1>
+    {% if ventas %}
+    {% for venta_id, venta in ventas.items() %}
+    <div class="card mb-5">
+        <div class="card-header bg-secondary text-white">
+            <h2 class="mb-0">Compra realizada el {{ venta.fecha.strftime('%d/%m/%Y') }}</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Talla</th>
+                        <th scope="col">Imagen</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Precio unitario</th>
+                        <th scope="col">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto, detalles in venta.productos.items() %}
+                    <tr>
+                        <td>{{ producto[1] }}</td>
+                        <td>{{ producto[2] }}</td>
+                        <td> <img src="{{ url_for('static', filename='img/' + producto[4]) }}" alt=""
+                                style="width: 200px; height: 200px;"></td>
+                        <td>{{ detalles.cantidad }}</td>
+                        <td>${{ detalles.precio }}</td>
+                        <td>${{ detalles.cantidad * detalles.precio }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-center">No tienes compras realizadas</p>
+    {% endif %}
+</div>
+
+<div class="container ventasAp">
+    <h1 class="text-center mt-5 mb-4"><i class="fas fa-truck"></i> En Camino</h1>
+    {% if ventasAp %}
+    {% for venta_id, venta in ventasAp.items() %}
+    <div class="card mb-5">
+        <div class="card-header bg-secondary text-white">
+            <h2 class="mb-0">Compra realizada el {{ venta.fecha.strftime('%d/%m/%Y') }}</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Talla</th>
+                        <th scope="col">Imagen</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Precio unitario</th>
+                        <th scope="col">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto, detalles in venta.productos.items() %}
+                    <tr>
+                        <td>{{ producto[1] }}</td>
+                        <td>{{ producto[2] }}</td>
+                        <td> <img src="{{ url_for('static', filename='img/' + producto[4]) }}" alt=""
+                                style="width: 200px; height: 200px;"></td>
+                        <td>{{ detalles.cantidad }}</td>
+                        <td>${{ detalles.precio }}</td>
+                        <td>${{ detalles.cantidad * detalles.precio }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-center">No tienes compras realizadas</p>
+    {% endif %}
+</div>
+
+
+<script src="../static/js/misCompras.js"></script>
+<script>mostrarSoloBotones();</script>
+{% endblock %}
