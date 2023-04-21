@@ -110,10 +110,11 @@ def verProducto():
 
 @main.route('/verModelos',methods=["GET","POST"])
 def verModelos():
-        prods = Producto.query.filter(Producto.modelo == request.args.get('modelo')).distinct(Producto.color).all()
-
+     prods = Producto.query.filter(
+            Producto.modelo == request.args.get('modelo')
+            ).group_by(Producto.color).all()
                
-        return render_template('catalogoPorModelo.html', productos = prods)
+     return render_template('catalogoPorModelo.html', productos = prods)
 
 @main.route('/principalAd',methods=["GET","POST"])
 @login_required

@@ -1,35 +1,29 @@
 import os 
-import uuid
-import base64, json
 from operator import or_
-from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app, make_response, send_file
+from flask import Blueprint, render_template, flash, redirect, request, url_for, current_app, make_response, send_file, Response
 from flask_security import login_required, current_user
 from flask_security.decorators import roles_required, roles_accepted
+from flask_excel import make_response_from_query_sets
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.pdfgen.canvas import Canvas
+from reportlab.lib.units import inch
+from tempfile import NamedTemporaryFile
 from ..models import db
 from .. import userDataStore, db
+from .productosAdmin import ad_post, modificar_poducto, modificar_producto_get, actualizar_stock_post
 from .proveedores import insertar_proveedor, modificar_proveedor_get, modificar_proveedor_post, eliminar_proveedor_get, eliminar_proveedor_post
-from project.models import  Producto, Role, User, InventarioMateriaPrima, ExplotacionMaterial, Proveedor,DetCompra,Compra, DetVenta, Venta
-from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash 
-import pandas as pd
-from itertools import groupby
-import cufflinks as cf
-import plotly.express as px
-import plotly.io as pio
-import matplotlib.pyplot as plt
-from plotly.subplots import make_subplots
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import plotly.graph_objs as go
+from project.models import  Producto, User, InventarioMateriaPrima, ExplotacionMaterial, Proveedor,DetCompra,Compra, DetVenta, Venta
+from werkzeug.security import generate_password_hash
 import io 
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
-from reportlab.pdfgen import canvas
-from io import BytesIO
-import matplotlib
 from sqlalchemy import func
-matplotlib.use('Agg')
+
 
 
 administrador = Blueprint('administrador', __name__)
@@ -47,7 +41,7 @@ logger.addHandler(handler)
 def admin():
     productos = Producto.query.filter_by(estatus=1).all()
     materiales = InventarioMateriaPrima.query.all()
-    print(materiales)
+
     return render_template('RopaCrud.html', productos=productos,materiales=materiales, enumerate=enumerate)
 
 
@@ -56,105 +50,7 @@ def admin():
 @roles_required('admin')
 def admin_post():
     if request.method == 'POST':
-        # Obtener los datos del formulario
-        nombre = request.form['nombre']
-        descripcion = request.form['descripcion']
-        talla = request.form['talla']
-        color = request.form['color']
-        modelo = request.form['modelo']
-        precio = request.form['precio']
-        img = str(uuid.uuid4()) + '.png'
-        imagen = request.files['imagen']
-        ruta_imagen = os.path.abspath('project\\static\\img')
-        imagen.save(os.path.join(ruta_imagen, img))
-        stock_existencia = request.form['stock_existencia']
-        materiales=request.form.getlist('materiales')
-        cantidad_usada = list(filter(bool, request.form.getlist('cantidad_usada[]')))
-        print(materiales)
-        print (cantidad_usada)
-        cantidades_individuales = cantidad_usada
-        print (cantidades_individuales)
-        inventarioM=InventarioMateriaPrima.query.all()
-        print (inventarioM)
-        # Validar que se haya escogido al menos un material
-        if not materiales or not cantidad_usada:
-            flash("Debe escoger al menos un material para crear el producto.", "error")
-            return redirect(url_for('main.principalAd'))
-        
-        # Actualizar el inventario de los materiales utilizados en la creación del producto
-        cantidad_utilizada_por_material = {}
-        for material_id, cantidad_utilizada, cantidadesIndi in zip(materiales, cantidad_usada, cantidades_individuales):
-            if cantidad_utilizada:
-                cantidad_utilizada_por_material[int(material_id)] = (float(cantidad_utilizada), float(cantidadesIndi))
-                print(f"Material: {material_id}, Cantidad utilizada: {cantidad_utilizada}, Cantidad individual: {cantidadesIndi}")
-
-        for material_id, (cantidad_utilizada, cantidadesIndi) in cantidad_utilizada_por_material.items():
-            materiales = InventarioMateriaPrima.query.filter_by(id=material_id).all()
-            if not materiales:
-                flash("No existe el material en el inventario.", "error")
-                return redirect(url_for('main.principalAd'))
-            for material in materiales:
-                if material is None:
-                    db.session.rollback()
-                    flash(f"No se encontró el material con la identificación {material_id}.", "error")
-                    return redirect(url_for('main.principalAd'))
-                if material.cantidad < cantidad_utilizada:
-                    db.session.rollback()
-                    flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
-                    return redirect(url_for('main.principalAd'))
-                
-                if cantidadesIndi < 0:
-                    db.session.rollback()
-                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
-                    return redirect(url_for('main.principalAd'))
-                print(materiales)
-            
-        # Crear una instancia del objeto Producto con los datos recibidos
-        nuevo_producto = Producto(nombre=nombre, descripcion=descripcion, talla=talla, color=color, modelo=modelo,
-                                        precio=precio, imagen=img, stock_existencia=stock_existencia)
-        # Agregar el nuevo producto a la sesión de la base de datos
-        db.session.add(nuevo_producto)
-        
-        # Obtener el objeto Producto creado en la sesión de la base de datos
-        producto = db.session.query(Producto).order_by(Producto.id.desc()).first()
-        print(f"Producto: {producto.id}")    
-        for material_id, (cantidad_utilizada, cantidadesIndi) in cantidad_utilizada_por_material.items():
-            materiales = InventarioMateriaPrima.query.filter_by(id=material_id).all()
-            for material in materiales:
-                #crea una validacion para que no se pueda crear un producto cuando el material se encuentre en su minimo
-                if material.cantidad <= material.stock_minimo:
-                    flash(f"No se puede crear el producto porque el material {material.nombre} se encuentra en su minimo.", "error")
-                    db.session.rollback()
-                    return redirect(url_for('main.principalAd'))
-                
-                cantidad_utilizada_total = cantidad_utilizada * float(stock_existencia)
-                print ("Esta es la cantidad total utilizada -----------------"+str(cantidad_utilizada_total))
-                if cantidad_utilizada_total > material.cantidad:
-                    db.session.rollback()
-                    flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
-                    return redirect(url_for('main.principalAd'))
-                
-                if cantidad_utilizada_total < 0:
-                    db.session.rollback()
-                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
-                    return redirect(url_for('main.principalAd'))
-                
-                explotacion_material = ExplotacionMaterial(producto_id=producto.id, material_id=material.id, cantidad_usada=cantidad_utilizada_total, cantidadIndividual=cantidadesIndi)
-                db.session.add(explotacion_material)
-                db.session.commit()  # guardar cambios aquí
-
-                material.cantidad -= cantidad_utilizada_total
-                db.session.add(material)
-
-                # Mensaje de depuración
-                print(f"Producto: {producto.id}, Material: {material_id}, Cantidad utilizada: {cantidad_utilizada_total}")
-
-        # Guardar los cambios en la sesión de la base de datos
-        db.session.commit()
-
-        #Redirigir al administrador a la página principal del panel de control
-        flash("El producto ha sido agregado exitosamente.", "success")
-    return redirect(url_for('main.principalAd'))
+       return ad_post()
     
 
 @administrador.route('/modificar', methods=['GET', 'POST'])
@@ -168,36 +64,9 @@ def modificar():
     if not producto.imagen:
         producto.imagen = 'default.png' # o cualquier otro valor predeterminado para la imagen
     if request.method == 'POST':
-        producto.nombre = request.form.get('nombre')
-        producto.descripcion = request.form.get('descripcion')
-        producto.talla = request.form.get('talla')
-        producto.color = request.form.get('color')
-        producto.modelo = request.form.get('modelo')
-        producto.precio = request.form.get('precio')
-        producto.stock_existencia = request.form.get('stock')
-        print (producto.stock_existencia)
-        imagen = request.files.get('imagen')
-        ruta_imagen = os.path.abspath('project\\static\\img')
-        
-        if imagen:
-            # Eliminar la imagen anterior
-            os.remove(os.path.join(ruta_imagen, producto.imagen))
-            # Guardar la nueva imagen
-            filename = secure_filename(imagen.filename)
-            imagen.save(os.path.join(ruta_imagen, filename))
-            producto.imagen = filename
-        db.session.commit()
-        flash("El registro se ha modificado exitosamente.", "success")
-        return redirect(url_for('main.principalAd'))
-    
+      return modificar_poducto(producto)
     elif request.method == 'GET':
-        materiales = InventarioMateriaPrima.query.all()
-        explotacion = ExplotacionMaterial.query.filter_by(producto_id=producto.id).all()
-        cantidades = {exp.material_id: exp.cantidadIndividual for exp in explotacion}
-
-        return render_template('modificar.html', producto=producto, id=id, 
-                            materiales=materiales, explotacion=explotacion, 
-                            cantidades=cantidades)
+        return modificar_producto_get(producto)
 
 
 @administrador.route('/actualizarStock', methods=['GET', 'POST'])
@@ -207,76 +76,13 @@ def actualizarStock():
     producto = Producto.query.get(id)
     materialesU = request.form.getlist('materiales')
     cantidad_usada = list(filter(bool, request.form.getlist('cantidad_usada[]')))
-    cantidades_individuales = cantidad_usada
-    print (cantidad_usada)
-    
+    cantidades_individuales = cantidad_usada    
     if producto is None:
         flash("El producto no existe", "error")
         return redirect(url_for('main.admin'))
     
     if request.method == 'POST':
-        nuevo_stock = request.form.get('cantidad')
-        stock_anterior = producto.stock_existencia
-        print ("este es el stock anterior----------------------------", stock_anterior)
-        # Actualizar el inventario de los materiales utilizados en la creación del producto
-        cantidad_utilizada_por_material = {}
-        for material_id, cantidad_utilizada, cantidadesIndi in zip(materialesU, cantidad_usada, cantidades_individuales):
-            if cantidad_utilizada:
-                cantidad_utilizada_por_material[int(material_id)] = (float(cantidad_utilizada), float(cantidadesIndi))
-                print(f"Material: {material_id}, Cantidad utilizada: {cantidad_utilizada}, Cantidad individual: {cantidadesIndi}")
-
-        for material_id, (cantidad_utilizada, cantidadesIndi) in cantidad_utilizada_por_material.items():
-            materiales = InventarioMateriaPrima.query.filter_by(id=material_id).all()
-            if not materiales:
-                flash("No existe el material en el inventario.", "error")
-                return redirect(url_for('main.principalAd'))
-            for material in materiales:
-                if material is None:
-                    flash(f"No se encontró el material con la identificación {material_id}.", "error")
-                    return redirect(url_for('main.principalAd'))
-                if material.cantidad < cantidad_utilizada:
-                    flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
-                    return redirect(url_for('main.principalAd'))
-                
-                if cantidadesIndi < 0:
-                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
-                    return redirect(url_for('main.principalAd'))
-                print("estos son los materiales", materiales)
-        # Actualizar el stock del producto
-        print("este es el stock anterior" + str(stock_anterior))	
-        print("este es el nuevo stock" + str(nuevo_stock))
-        producto.stock_existencia += int(nuevo_stock)
-        print("esta es la suma" + str(producto.stock_existencia))
-        db.session.add(producto)
-        for material_id, (cantidad_utilizada, cantidadesIndi) in cantidad_utilizada_por_material.items():
-            materiales = InventarioMateriaPrima.query.filter_by(id=material_id).all()
-            
-            for material in materiales:
-                cantidad_utilizada_total = cantidad_utilizada * float(nuevo_stock)
-                
-                if cantidad_utilizada_total > material.cantidad:
-                    flash(f"No hay suficiente cantidad de {material.nombre} para crear el producto.", "error")
-                    return redirect(url_for('main.principalAd'))
-                
-                if cantidad_utilizada_total < 0:
-                    flash(f"La cantidad utilizada de {material.nombre} no puede ser negativa.", "error")
-                    return redirect(url_for('main.principalAd'))
-                
-                #crea una validacion para que no se pueda crear un producto cuando el material se encuentre en su minimo
-                if material.cantidad <= material.stock_minimo:
-                    flash(f"No se puede crear el producto porque el material {material.nombre} se encuentra en su minimo.", "error")
-                    return redirect(url_for('main.principalAd'))
-                
-                explotacion_material = ExplotacionMaterial(producto_id=producto.id, material_id=material.id, cantidad_usada=cantidad_utilizada_total, cantidadIndividual=cantidadesIndi)
-                db.session.add(explotacion_material)
-
-                material.cantidad -= cantidad_utilizada_total
-                db.session.add(material)
-        
-        # Guardar los cambios en la sesión de la base de datos
-        db.session.commit()
-        flash("El stock se actualizó con éxito", "success")
-        return redirect(url_for('main.principalAd'))
+        return actualizar_stock_post(producto, materialesU, cantidades_individuales, cantidad_usada)
     
     elif request.method == 'GET':
         materiales = InventarioMateriaPrima.query.all()
@@ -676,6 +482,7 @@ def findUser():
 ################################### Gestion de Finanzas #############################
 
 
+
 @administrador.route("/finanzas", methods=['GET','POST'])
 @login_required
 def finanzas():
@@ -688,12 +495,195 @@ def finanzas():
             
     compras_por_mes = db.session.query(
                 func.date_format(Compra.fecha, '%Y-%m').label('mes'),
-                func.sum(DetCompra.cantidad * DetCompra.precio).label('total')
+                func.sum(DetCompra.precio).label('total')
             ).join(DetCompra).filter(
                 Compra.estatus == True
             ).group_by('mes').all()
-    print(compras_por_mes, " Compras")
-    return render_template('finanzas.html', ventas_por_mes=ventas_por_mes, compras_por_mes=compras_por_mes)
+
+
+    utilidad_mensual = []
+    for venta, compra in zip(ventas_por_mes, compras_por_mes):
+        if venta.mes == compra.mes:
+            utilidad_mensual.append({
+                'mes': venta.mes,
+                'utilidad': venta.total - compra.total
+            })
+    return render_template('finanzas.html', ventas_por_mes=ventas_por_mes, compras_por_mes=compras_por_mes,  utilidad_mensual=utilidad_mensual)
+
+
+
+
+
+
+@administrador.route("/reportesFinanzas", methods=['GET','POST'])
+@login_required
+def reportesFinanzas():
+    if request.method == 'POST':
+        fecha_inicio = request.form['fecha_inicio']
+        fecha_fin = request.form['fecha_fin']
+        radio_btn = request.form['radio_btn']
+
+        if radio_btn == 'ventas':
+            ventas = db.session.query(
+                    Venta.fecha,
+                    Producto.nombre,
+                    Producto.modelo,
+                    DetVenta.cantidad,
+                    DetVenta.precio,
+                    (DetVenta.cantidad * DetVenta.precio).label("total")
+                ).select_from(Venta).join(DetVenta).join(Producto).filter(
+                    Venta.fecha.between(fecha_inicio, fecha_fin)
+                ).all()
+            ventas_total = sum([v[5] for v in ventas])
+            encabezados = ['Fecha', 'Producto', 'Modelo', 'Cantidad', 'Precio Unitario', 'Total']
+            detalles = [encabezados] + [[
+                venta.fecha,
+                venta.nombre,
+                venta.modelo,
+                venta.cantidad,
+                venta.precio,
+                venta.total
+            ] for venta in ventas]
+
+            output = io.BytesIO()
+            doc = SimpleDocTemplate(output, pagesize=letter)
+            styles = getSampleStyleSheet()
+            styles.add(ParagraphStyle(name='Negrita', fontName='Helvetica-Bold', fontSize=14))
+
+            Story = []           
+            
+
+            # Agregar encabezado
+            im = Image("C:/Users/zende/OneDrive/Escritorio/Rama Sergio/ProyectoFinal/project/static/images/Logo3S.png", width=300, height=150)
+            Story.append(im)          
+            Story.append(Spacer(1, 12))
+            Story.append(Paragraph("Sartorial Reporte de Ventas", styles["Title"]))
+            Story.append(Spacer(1, 12))
+            Story.append(Paragraph(f"Fecha de Impresión: {datetime.now().date()}", styles["Normal"]))
+            fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')
+            fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')
+            Story.append(Paragraph(f"Reporte del {fecha_inicio} al {fecha_fin}", styles["Negrita"]))
+            Story.append(Spacer(1, 12))    
+            Story.append(Spacer(1, 12))
+
+            # Agregar tabla de detalles
+            tableStyle = TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 14),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 12),
+                ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.grey),
+                ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
+                ('ALIGN', (0, -1), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, -1), (-1, -1), 14),
+                ('TOPPADDING', (0, -1), (-1, -1), 12),
+                ('BOTTOMPADDING', (0, -1), (-1, -1), 12),
+                ])
+            t = Table(detalles)
+            t.setStyle(tableStyle)
+            Story.append(t)
+            Story.append(Spacer(1, 12))
+            # Agregar total de ventas
+            Story.append(Paragraph(f"Total de ventas: {ventas_total}", styles["Negrita"]))
+
+            # Construir PDF
+            doc.build(Story)
+            output.seek(0)
+            response = make_response(output.getvalue())
+            response.headers.set('Content-Disposition', 'attachment', filename=f'Rep_Ventas_{datetime.now().date()}.pdf')
+            response.headers.set('Content-Type', 'application/pdf')
+                        
+            return response
+        
+        elif radio_btn == 'compras':
+            
+            # Generar reporte de compras
+            compras = db.session.query(
+                Compra.fecha,
+                Proveedor.nombre.label("nombre_proveedor"),
+                InventarioMateriaPrima.nombre,
+                DetCompra.cantidad,
+                DetCompra.precio
+            ).select_from(Compra).join(DetCompra).join(InventarioMateriaPrima).join(Proveedor).filter(
+                Compra.fecha.between(fecha_inicio, fecha_fin)
+            ).all()
+            compras_total = sum([c[4] for c in compras])
+
+            encabezados = ['Fecha', 'Proveedor', 'Material', 'Cantidad', 'Total']
+            detalles = [encabezados] + [[
+                compra.fecha,
+                compra.nombre_proveedor,
+                compra.nombre,
+                compra.cantidad,
+                f"{compra.precio:.2f}",
+            ] for compra in compras]
+
+            output = io.BytesIO()
+            doc = SimpleDocTemplate(output, pagesize=letter, rightMargin=inch/2, leftMargin=inch/2, topMargin=inch/2, bottomMargin=inch/2)
+            styles = getSampleStyleSheet()
+            styles.add(ParagraphStyle(name='Negrita', fontName='Helvetica-Bold', fontSize=14))
+
+            Story = []
+
+            # Agregar encabezado
+            im = Image("C:/Users/zende/OneDrive/Escritorio/Rama Sergio/ProyectoFinal/project/static/images/Logo3S.png", width=300, height=150)
+            Story.append(im)          
+            Story.append(Spacer(1, 12))
+            Story.append(Paragraph("Sartorial Reporte de Compras", styles["Title"]))
+            Story.append(Spacer(1, 12))
+                # Agregar fechas
+            Story.append(Paragraph(f"Fecha de Impresión: {datetime.now().date()}", styles["Normal"]))
+            fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')
+            fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')
+            Story.append(Paragraph(f"Reporte del {fecha_inicio} al {fecha_fin}", styles["Negrita"]))
+            Story.append(Spacer(1, 12))
+
+            # Agregar tabla de detalles
+            tabla = Table(detalles, colWidths=[80, 120, 120, 100, 70, 70, 70])
+            tabla.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                ('ALIGN', (0,0), (-1,0), 'CENTER'),
+                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0,0), (-1,0), 14),
+                ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                ('TEXTCOLOR', (0,1), (-1,-1), colors.black),
+                ('ALIGN', (0,1), (-1,-1), 'CENTER'),
+                ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
+                ('FONTSIZE', (0,1), (-1,-1), 12),
+                ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
+                ('BOX', (0,0), (-1,-1), 0.25, colors.black)
+            ]))
+            Story.append(tabla)
+
+            # Agregar total
+            Story.append(Spacer(1, 12))
+            Story.append(Paragraph(f"Total de Compras: ${compras_total:.2f}", styles["Negrita"]))
+
+            doc.build(Story)
+            output.seek(0)
+            response = make_response(output.getvalue())
+            response.headers.set('Content-Disposition', 'attachment', filename=f'Rep_Compras_{datetime.now().date()}.pdf')
+            response.headers.set('Content-Type', 'application/pdf')
+            return response
+            
+            
+                        
+
+
+
+
+
 
 
 
@@ -745,18 +735,19 @@ def detalleVenta():
         estatus = request.args.get('estatus')
         print(estatus, "ESTATUS")
         detalle_ventas = db.session.query(Venta, DetVenta, Producto)\
-        .join(DetVenta, Venta.id == DetVenta.venta_id)\
-        .join(Producto, DetVenta.producto_id == Producto.id)\
-        .filter(Venta.id == id_venta).all()
+            .join(DetVenta, Venta.id == DetVenta.venta_id)\
+            .join(Producto, DetVenta.producto_id == Producto.id)\
+            .filter(Venta.id == id_venta).all()
 
         # Creamos un diccionario para almacenar los productos y sus cantidades
         productos = {}
         for venta, det_venta, producto in detalle_ventas:
-            if producto.nombre in productos and producto.talla == productos[producto.nombre]['talla']:
-                productos[producto.nombre]['cantidad'] += det_venta.cantidad
-                productos[producto.nombre]['precio'] += det_venta.precio
+            clave_producto = (producto.modelo, producto.talla, producto.color)
+            if clave_producto in productos:
+                productos[clave_producto]['cantidad'] += det_venta.cantidad
+                productos[clave_producto]['precio'] += det_venta.precio
             else:
-                productos[producto.nombre] = {
+                productos[clave_producto] = {
                     'talla': producto.talla,
                     'color': producto.color,
                     'modelo': producto.modelo,
@@ -766,9 +757,14 @@ def detalleVenta():
 
         # Convertimos el diccionario a una lista para pasarlo al template
         lista_productos = []
-        for nombre, producto in productos.items():
+        for (modelo, talla, color), producto in productos.items():
+            nombre_producto = Producto.query.filter_by(
+                modelo=modelo,
+                talla=talla,
+                color=color
+            ).first().nombre
             lista_productos.append({
-                'nombre': nombre,
+                'nombre': nombre_producto,
                 'talla': producto['talla'],
                 'color': producto['color'],
                 'modelo': producto['modelo'],
@@ -788,6 +784,7 @@ def detalleVenta():
         return redirect(url_for('administrador.ventas'))
 
     return render_template('detalleVenta.html', detalle_ventas=lista_productos, estatus=estatus, id_venta=id_venta)
+
 
 
 

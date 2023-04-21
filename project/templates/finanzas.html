@@ -4,6 +4,7 @@
 {% block content %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="charts-container">
     <div class="chart-container">
         <h1><i class="fa-sharp fa-solid fa-hand-holding-dollar" style="color: #000000;"></i> Ventas totales por mes</h1>
@@ -52,7 +53,6 @@
 
 
 
-
     <div class="chart-container">
         <h1><i class="fa-sharp fa-solid fa-hand-holding-dollar" style="color: #000000;"></i> Compras totales por mes
         </h1>
@@ -66,14 +66,14 @@
                 backgroundColor: [
                     'rgba(75, 192, 192, 0.2)',
                     'rgba(75, 192, 192, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192,192, 0.2)',
                     'rgba(75, 192, 192, 0.2)',
                     'rgba(75, 192, 192, 0.2)'
                 ],
                     borderColor: [
                         'rgba(75, 192, 192, 1)',
-                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 1 192, 0.2)',
+                        'rgba(75, 192, 92, 1)',
                         'rgba(75, 192, 192, 1)',
                         'rgba(75, 192, 192, 1)',
                         'rgba(75, 192, 192, 1)',
@@ -96,9 +96,111 @@
                 data: comprasData,
                 options: comprasOptions
             });
+
         </script>
     </div>
+
+
+
+    <div class="chart-container">
+        <h1><i class="fa-sharp fa-solid fa-hand-holding-dollar" style="color: #000000;"></i> Utilidad mensual</h1>
+        <canvas id="utilidad-chart" width="800" height="400"></canvas>
+        <script>
+            var utilidadData = {
+                labels: [{% for utilidad in utilidad_mensual %}"{{ utilidad.mes }}", {% endfor %}],
+            datasets: [{
+                label: 'Utilidad mensual',
+                data: [{% for utilidad in utilidad_mensual %}{{ utilidad.utilidad }}, {% endfor %}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192,192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(75, 192, 192, 0.2)'
+                ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 1 192, 0.2)',
+                        'rgba(75, 192, 92, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                        borderWidth: 1
+                }]
+            };
+
+            var utilidadOptions = {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            };
+
+            var utilidadChart = new Chart(document.getElementById('utilidad-chart'), {
+                type: 'line',
+                data: utilidadData,
+                options: utilidadOptions
+            });
+        </script>
+    </div>
+
+
+
+
 </div>
+
+
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Reportes de Finanzas</h3>
+                </div>
+                <div class="card-body">
+                    <form action="/reportesFinanzas" method="POST">
+                        <div class="form-group">
+                            <label for="fecha_inicio">Fecha de inicio:</label>
+                            <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_fin">Fecha de fin:</label>
+                            <input type="date" name="fecha_fin" id="fecha_fin" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="radio_btn">Tipo de reporte:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="radio_btn" id="ventas"
+                                    value="ventas">
+                                <label class="form-check-label" for="ventas">
+                                    Ventas
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="radio_btn" id="compras"
+                                    value="compras">
+                                <label class="form-check-label" for="compras">
+                                    Compras
+                                </label>
+                            </div>
+
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" name="pdf" title="Descarga PDF"><img
+                                src="../static/images/pdf.png" alt="Descarga PDF"
+                                style="height: 30px; width: 30px;"></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 
 <style>
@@ -119,5 +221,74 @@
             width: 100%;
         }
     }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: "Roboto Slab", serif;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: .5rem;
+        line-height: 1.2;
+    }
+
+    .container-fluid {
+        margin-top: 50px;
+    }
+
+    .card {
+        border-radius: 0;
+        box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+    }
+
+    .card-header {
+        background-color: #1f3a93;
+        color: #fff;
+        font-size: 20px;
+        padding: 20px;
+    }
+
+    .card-title {
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: .5rem;
+    }
+
+    .form-control {
+        border-radius: 0;
+        border-color: #ccc;
+    }
+
+    .form-check-input {
+        margin-right: .5rem;
+    }
+
+    .btn-primary {
+        background-color: #fff;
+        border-color: #fff;
+        box-shadow: none;
+        transition: background-color .2s;
+    }
+
+    .btn-primary:hover {
+        background-color: #000000;
+        border-color: #000000;
+    }
+
+    img {
+        display: inline-block;
+        vertical-align: middle;
+    }
 </style>
+
 {% endblock %}
